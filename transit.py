@@ -14,11 +14,11 @@ import sys
 # SWN hex grids are an "odd-q" layout (flat bottoms, high top-left corner) with "offset" coordinates.
 
 def offset_to_cube(col, row):
-    return CubeCoord(
-        x=col,
-        z=row - (col - (col % 2)) / 2,
-        y=-1 * x - z,
-    )
+    x = col
+    z = row - (col - (col % 2)) // 2
+    y = -1 * x - z
+
+    return CubeCoord(x, z, y)
 
 def cube_distance(a, b):
     return max(abs(a.x - b.x), abs(a.y - b.y), abs(a.z - b.z))
@@ -68,7 +68,15 @@ def read_tiddlywiki(input):
 
 def write_tsv(output, systems):
     for system in systems:
-        output.write("\t".join((str(e) for e in system)))
+        prefix = ""
+        for e in system:
+            output.write(prefix)
+            prefix = "\t"
+
+            if isinstance(e, tuple):
+                output.write(",".join(str(p) for p in e))
+            else:
+                output.write(str(e))
         output.write("\n")
 
 #def write_graphml():
