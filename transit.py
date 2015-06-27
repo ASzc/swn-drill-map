@@ -27,7 +27,7 @@ def cube_distance(a, b):
 # Read
 #
 
-grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
+grid_pattern = re.compile(r'GRID (?P<y>[0-9]{2})(?P<x>[0-9]{2})')
 
 CubeCoord = collections.namedtuple("CubeCoord", ["x", "z", "y"])
 OffsetCoord = collections.namedtuple("OffsetCoord", ["x", "y"])
