@@ -107,6 +107,12 @@ def convert(input, output, drive_level, output_func):
 def main():
     output_fmts = {n[6:]: f for n,f in globals().items() if n.startswith("write_")}
 
+    # TODO add subcommands? drive isn't always needed if tsv won't contain distance info (any readable way to encode that info in tsv?).
+
+    # TODO probably better to use a table rather than a graph for distance info output?
+
+    # TODO is there any way to show all drive levels at once? ==> Color coding? Note: lower drive levels may not be able to get everywhere in the sector, higher drive levels may be able to take shorter paths
+
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-format", default="tsv", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
     parser.add_argument("drive", type=int, choices=range(1,6+1), help="Starship drive level.")
