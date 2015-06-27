@@ -7,6 +7,12 @@ import string
 import sys
 
 #
+# Hex Grid Calculations
+#
+
+# TODO distance
+
+#
 # Read
 #
 
@@ -43,18 +49,19 @@ def read_tiddlywiki(input):
 # Write
 #
 
-def write_graphml(output, systems):
-    # TODO actual implementation
+def write_tsv(output, systems):
     for system in systems:
-        output.write(" ".join((str(e) for e in system)))
+        output.write("\t".join((str(e) for e in system)))
         output.write("\n")
 
+#def write_graphml():
+#    pass
 
 #
 # Main
 #
 
-def convert(input, output):
+def convert(input, output, drive_level, output_func):
     # Open streams if required
     if input == "-":
         convert(sys.stdin, output)
@@ -70,16 +77,20 @@ def convert(input, output):
     # Do actual conversion
     else:
         systems = read_tiddlywiki(input)
-        write_graphml(output, systems)
+        output_func(output, systems)
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert location info from a TiddlyWiki created by SWN Sector Generator into graphml objects")
+    output_fmts = {n[6:]: f for n,f in globals().items() if n.startswith("write_")}
+
+    parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
+    parser.add_argument("-o", "--output-format", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
+    parser.add_argument("drive", choices=range(1,6+1), help="Starship drive level.")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
     parser.add_argument("output", help="graphml file to write. Use - for stdout.")
 
     args = parser.parse_args()
 
-    convert(args.input, args.output)
+    convert(args.input, args.output, args.drive, output_fmts[args.output_format])
 
 if __name__ == "__main__":
     main()
