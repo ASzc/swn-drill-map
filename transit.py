@@ -10,6 +10,18 @@ import sys
 # Hex Grid Calculations
 #
 
+# http://www.redblobgames.com/grids/hexagons/#coordinates
+# SWN hex grids are an "odd-q" layout (flat bottoms, high top-left corner) with "offset" coordinates.
+
+def offset_to_cube(a, b):
+    # TODO
+    x = 0
+    y = 0
+    z = 0
+
+    return CubeCoord(x, y, z)
+
+
 # TODO distance
 
 #
@@ -18,7 +30,9 @@ import sys
 
 grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
 
-System = collections.namedtuple("System", ["name", "x", "y"])
+CubeCoord = collections.namedtuple("CubeCoord", ["x", "y", "z"])
+OffsetCoord = collections.namedtuple("OffsetCoord", ["x", "y"])
+System = collections.namedtuple("System", ["name", "offset", "cube"])
 
 def read_tiddlywiki(input):
     import bs4
@@ -37,10 +51,14 @@ def read_tiddlywiki(input):
             x = int(raw_coords["x"])
             y = int(raw_coords["y"])
 
+            # Store both coord systems
+            offset_coords = OffsetCoord(x, y)
+            cube_coords = offset_to_cube(*offset_coords)
+
             systems.append(System(
                 name=name,
-                x=x,
-                y=y,
+                offset=offset_coords,
+                cube=cube_coords,
             ))
 
     return systems
