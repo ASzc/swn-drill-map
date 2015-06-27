@@ -67,6 +67,7 @@ def read_tiddlywiki(input):
 #
 
 def write_tsv(output, systems):
+    # TODO yaml a better option?
     for system in systems:
         prefix = ""
         for e in system:
@@ -107,7 +108,7 @@ def convert(input, output, drive_level, output_func):
 def main():
     output_fmts = {n[6:]: f for n,f in globals().items() if n.startswith("write_")}
 
-    # TODO add subcommands? drive isn't always needed if tsv won't contain distance info (any readable way to encode that info in tsv?).
+    # TODO add subcommands? drive isn't always needed if tsv won't contain distance info (any readable way to encode that info in tsv?). Probably can just generate a directory of files?
 
     # TODO probably better to use a table rather than a graph for distance info output? ==> Can't show the route with a table, but could have alternative output mode to show the minimum distance that needs to be travelled between two systems for a particular spike drive level.
 
