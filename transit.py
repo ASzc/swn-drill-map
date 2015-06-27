@@ -113,6 +113,8 @@ def main():
 
     # TODO is there any way to show all drive levels at once? ==> Color coding? Note: lower drive levels may not be able to get everywhere in the sector, higher drive levels may be able to take shorter paths
 
+    # TODO need to include elapsed time information? The only time it isn't 6 days per jump is when jumping less than the maximum distance the spike drive can travel, ex: drive level 3 jumps 1 hex in (6*1)/3=2 days, 2 hexes in (6*2)/3=4 days, 3 hexes in (6*3)/3=6 days
+
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-format", default="tsv", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
     parser.add_argument("drive", type=int, choices=range(1,6+1), help="Starship drive level.")
