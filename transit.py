@@ -13,16 +13,15 @@ import sys
 # http://www.redblobgames.com/grids/hexagons/#coordinates
 # SWN hex grids are an "odd-q" layout (flat bottoms, high top-left corner) with "offset" coordinates.
 
-def offset_to_cube(a, b):
-    # TODO
-    x = 0
-    y = 0
-    z = 0
+def offset_to_cube(col, row):
+    return CubeCoord(
+        x=col,
+        z=row - (col - (col % 2)) / 2,
+        y=-1 * x - z,
+    )
 
-    return CubeCoord(x, y, z)
-
-
-# TODO distance
+def cube_distance(a, b):
+    return max(abs(a.x - b.x), abs(a.y - b.y), abs(a.z - b.z))
 
 #
 # Read
@@ -30,7 +29,7 @@ def offset_to_cube(a, b):
 
 grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
 
-CubeCoord = collections.namedtuple("CubeCoord", ["x", "y", "z"])
+CubeCoord = collections.namedtuple("CubeCoord", ["x", "z", "y"])
 OffsetCoord = collections.namedtuple("OffsetCoord", ["x", "y"])
 System = collections.namedtuple("System", ["name", "offset", "cube"])
 
