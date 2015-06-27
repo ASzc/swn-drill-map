@@ -64,15 +64,15 @@ def write_tsv(output, systems):
 def convert(input, output, drive_level, output_func):
     # Open streams if required
     if input == "-":
-        convert(sys.stdin, output)
+        convert(sys.stdin, output, drive_level, output_func)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            convert(i, output)
+            convert(i, output, drive_level, output_func)
     elif output == "-":
-        convert(input, sys.stdout)
+        convert(input, sys.stdout, drive_level, output_func)
     elif isinstance(output, str):
         with open(output, "w") as o:
-            convert(input, o)
+            convert(input, o, drive_level, output_func)
 
     # Do actual conversion
     else:
@@ -83,8 +83,8 @@ def main():
     output_fmts = {n[6:]: f for n,f in globals().items() if n.startswith("write_")}
 
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
-    parser.add_argument("-o", "--output-format", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
-    parser.add_argument("drive", choices=range(1,6+1), help="Starship drive level.")
+    parser.add_argument("-o", "--output-format", default="tsv", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
+    parser.add_argument("drive", type=int, choices=range(1,6+1), help="Starship drive level.")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
     parser.add_argument("output", help="graphml file to write. Use - for stdout.")
 
