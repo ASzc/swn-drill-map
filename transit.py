@@ -2,10 +2,13 @@
 
 import argparse
 import collections
+import re
 import string
 import sys
 
-System = collections.namedtuple("System", ["name", "hex_number"])
+grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
+
+System = collections.namedtuple("System", ["name", "x", "y"])
 
 def read_tiddlywiki(input):
     import bs4
@@ -15,16 +18,29 @@ def read_tiddlywiki(input):
     soup = bs4.BeautifulSoup(input)
     for d in soup.find_all("div"):
         if "title" in d.attrs and d.attrs["title"].startswith("System:"):
+            # Get system name
+            name = string.capwords(d.attrs["title"][7:])
+
+            # Get coords from hex number
+            match = grid_pattern.search(d.text)
+            raw_coords = match.groupdict()
+            x = int(raw_coords["x"])
+            y = int(raw_coords["y"])
+
             systems.append(System(
-                name=string.capwords(d.attrs["title"][7:]),
-                =,
+                name=name,
+                x=x,
+                y=y,
             ))
 
     return systems
 
 
 def write_graphml(output, systems):
-    # 
+    # TODO actual implementation
+    for system in systems:
+        output.write(" ".join((str(e) for e in system)))
+        output.write("\n")
 
 
 def convert(input, output):
@@ -46,7 +62,7 @@ def convert(input, output):
         write_graphml(output, systems)
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert location info from a SWN SecGen created TiddlyWiki into graphml objects")
+    parser = argparse.ArgumentParser(description="Convert location info from a TiddlyWiki created by SWN Sector Generator into graphml objects")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
     parser.add_argument("output", help="graphml file to write. Use - for stdout.")
 
