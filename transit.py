@@ -109,7 +109,7 @@ def main():
 
     # TODO add subcommands? drive isn't always needed if tsv won't contain distance info (any readable way to encode that info in tsv?).
 
-    # TODO probably better to use a table rather than a graph for distance info output?
+    # TODO probably better to use a table rather than a graph for distance info output? ==> Can't show the route with a table, but could have alternative output mode to show the minimum distance that needs to be travelled between two systems for a particular spike drive level.
 
     # TODO is there any way to show all drive levels at once? ==> Color coding? Note: lower drive levels may not be able to get everywhere in the sector, higher drive levels may be able to take shorter paths
 
