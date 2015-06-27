@@ -6,6 +6,10 @@ import re
 import string
 import sys
 
+#
+# Read
+#
+
 grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
 
 System = collections.namedtuple("System", ["name", "x", "y"])
@@ -35,6 +39,9 @@ def read_tiddlywiki(input):
 
     return systems
 
+#
+# Write
+#
 
 def write_graphml(output, systems):
     # TODO actual implementation
@@ -42,6 +49,10 @@ def write_graphml(output, systems):
         output.write(" ".join((str(e) for e in system)))
         output.write("\n")
 
+
+#
+# Main
+#
 
 def convert(input, output):
     # Open streams if required
