@@ -8,6 +8,18 @@ import re
 import string
 import sys
 
+try:
+    import yaml
+except ImportError:
+    yaml_available = False
+else:
+    yaml_available = True
+    def namedtuple_representer(name):
+        tag = "!" + name
+        def representer(dumper, data):
+            return dumper.represent_mapping(tag, data.__dict__)
+        return representer
+
 #
 # Hex Grid Calculations
 #
@@ -47,14 +59,19 @@ def pathfind(graph, start, end, heuristic):
     # TODO A*
     pass
 
+def possible_jump_graph(direct_distances, drive_level):
+    graph = None
+
+    return graph
+
 def find_jump_paths(direct_distances, drive_level):
     system_names = sorted(direct_distances.keys())
 
     # Optimal paths between systems at a particular drive level
     paths = {s:{e:None for e in system_names} for s in system_names}
 
-    # TODO need to pregenerate a graph with all possible jumps at this drive_level
-    possible_jumps = None
+    # Generate this now, can be reused
+    possible_jumps = possible_jump_graph(direct_distances, drive_level)
 
     for start in system_names:
         for end in system_names:
@@ -74,6 +91,13 @@ def find_all_jump_paths(direct_distances, max_drive_level=6):
         paths[level] = find_jump_paths(direct_distances, level)
     return paths
 
+def find_all_path_costs(direct_distances, paths):
+    costs = dict()
+
+    # TODO costs indexed the same as output of find_all_jump_paths()
+
+    return costs
+
 #
 # Read
 #
@@ -83,6 +107,10 @@ grid_pattern = re.compile(r'GRID (?P<x>[0-9]{2})(?P<y>[0-9]{2})')
 CubeCoord = collections.namedtuple("CubeCoord", ["x", "z", "y"])
 OffsetCoord = collections.namedtuple("OffsetCoord", ["x", "y"])
 System = collections.namedtuple("System", ["name", "offset", "cube"])
+if yaml_available:
+    yaml.add_representer(CubeCoord, namedtuple_representer("cube"))
+    yaml.add_representer(OffsetCoord, namedtuple_representer("offset"))
+    yaml.add_representer(System, namedtuple_representer("system"))
 
 def read_tiddlywiki(input):
     import bs4
@@ -118,29 +146,43 @@ def read_tiddlywiki(input):
 #
 
 def dump_json(obj, path):
-    with open(path, "w") as f:
+    with open(path + ".json", "w") as f:
         json.dump(
             obj=obj,
             fp=f,
             ensure_ascii=False,
-            sort_keys=True,
-            indent=4,
+            sort_keys=not yaml_available,
+            indent=None if yaml_available else 4,
         )
+
+def dump_yaml(obj, path):
+    if yaml_available:
+        with open(path + ".yaml", "w") as f:
+            yaml.dump(
+                data=obj,
+                stream=f,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
 
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, systems, direct_distances, paths):
+def write_reports(output_dir, systems, direct_distances, paths, path_costs):
     os.makedirs(output_dir, exist_ok=True)
 
-    systems_file = os.path.join(output_dir, "systems.json")
-    dump_json(systems, systems_file)
+    def dump(obj, prefix):
+        dump_json(obj, prefix)
+        dump_yaml(obj, prefix)
 
-    direct_distances_file = os.path.join(output_dir, "direct_distances.json")
-    dump_json(direct_distances, direct_distances_file)
+    systems_file = os.path.join(output_dir, "systems")
+    dump(systems, systems_file)
+
+    direct_distances_file = os.path.join(output_dir, "direct_distances")
+    dump(direct_distances, direct_distances_file)
 
     #paths_file = os.path.join(output_dir, "paths.json")
-    #dump_json(paths, paths_file)
+    #dump(paths, paths_file)
 
 #
 # Main
@@ -158,9 +200,11 @@ def process(input, output_dir, max_drive_level):
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
-        paths = find_all_jump_paths(direct_distances, max_drive_level)
-        # TODO calculate time costs by combining paths and direct_distances? Or can we get that from A* immediately?
-        write_reports(output_dir, systems, direct_distances, paths)
+        #paths = find_all_jump_paths(direct_distances, max_drive_level)
+        #path_costs = find_all_path_costs(direct_distances, costs)
+        paths = None
+        path_costs = None
+        write_reports(output_dir, systems, direct_distances, paths, path_costs)
 
 def main():
 
@@ -176,7 +220,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
-    parser.add_argument("-m", "--max-drive-level", help="Maximum spike drive level. Default: 6")
+    parser.add_argument("-m", "--max-drive-level", default=6, help="Maximum spike drive level. Default: 6")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
 
     args = parser.parse_args()
