@@ -86,15 +86,21 @@ def find_jump_paths(direct_distances, drive_level):
 
 def find_all_jump_paths(direct_distances, max_drive_level=6):
     # Optimal paths between systems at all drive levels between 1 and max_drive_level
-    paths = dict()
+    all_paths = dict()
     for level in range(1, max_drive_level + 1):
-        paths[level] = find_jump_paths(direct_distances, level)
-    return paths
+        all_paths[level] = find_jump_paths(direct_distances, level)
+    return all_paths
 
-def find_all_path_costs(direct_distances, paths):
+def find_all_path_costs(direct_distances, all_paths):
     costs = dict()
 
-    # TODO costs indexed the same as output of find_all_jump_paths()
+    for level, paths in all_paths.items():
+        path_names = sorted(all_paths.keys())
+
+        for start in path_names:
+            for end in path_names:
+                # TODO load path nodes, sum the individual costs of the jumps, lookup those in direct_distances
+                costs[level][start][end] = None
 
     return costs
 
