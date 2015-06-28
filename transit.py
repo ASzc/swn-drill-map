@@ -143,19 +143,19 @@ def write_reports(output_dir, systems, direct_distances, paths):
 # Main
 #
 
-def process(input, output_dir):
+def process(input, output_dir, max_drive_level):
     # Open stream if required
     if input == "-":
-        process(sys.stdin, output_dir)
+        process(sys.stdin, output_dir, max_drive_level)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            process(i, output_dir)
+            process(i, output_dir, max_drive_level)
 
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
-        paths = find_all_jump_paths(direct_distances, 6)
+        paths = find_all_jump_paths(direct_distances, max_drive_level)
         # TODO calculate time costs by combining paths and direct_distances? Or can we get that from A* immediately?
         write_reports(output_dir, systems, direct_distances, paths)
 
@@ -173,6 +173,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
+    parser.add_argument("-m", "--max-drive-level", help="Maximum spike drive level. Default: 6")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
 
     args = parser.parse_args()
@@ -182,7 +183,7 @@ def main():
     else:
         output_dir = args.output_dir
 
-    process(args.input, output_dir)
+    process(args.input, output_dir, args.max_drive_level)
 
 if __name__ == "__main__":
     main()
