@@ -2,6 +2,8 @@
 
 import argparse
 import collections
+import heapq
+import itertools
 import json
 import os
 import re
@@ -60,10 +62,26 @@ if yaml_available:
     yaml.add_representer(JumpPath, namedtuple_representer("jump_path"))
 
 def pathfind(graph, start, end, heuristic):
-    # TODO A*
+    # A* search, assuming monotonic/consistent heuristic.
 
-    pass
+    already_checked = set()
 
+    frontier = []
+    frontier_tiebreaker = itertools.count()
+    heapq.heappush(frontier, (0, next(frontier_tiebreaker), start))
+
+    came_from = {start: None}
+    cost_so_far = {start: 0}
+
+    while frontier:
+
+        pass
+
+
+
+
+
+    # TODO extract path via came_from
 
     path = None
     cost = None
