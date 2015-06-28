@@ -105,15 +105,15 @@ def pathfind(graph, start, end, heuristic):
 
     return list(reversed(path))
 
-def possible_jump_graph(direct_distances, drive_level):
-    system_names = sorted(direct_distances.keys())
+def possible_jump_graph(hex_distances, drive_level):
+    system_names = sorted(hex_distances.keys())
 
     # Mapping of node name to map of destination node names to costs
     graph = {s:{} for s in system_names}
 
     for start in system_names:
         for end in system_names:
-            distance = direct_distances[start][end]
+            distance = hex_distances[start][end]
 
             # A jump is valid for the current drive if the distance is less than or equal to the drive level
             if 1 <= distance <= drive_level:
@@ -123,17 +123,17 @@ def possible_jump_graph(direct_distances, drive_level):
 
     return graph
 
-def find_jump_paths(direct_distances, drive_level):
-    system_names = sorted(direct_distances.keys())
+def find_jump_paths(hex_distances, drive_level):
+    system_names = sorted(hex_distances.keys())
 
     # Optimal paths between systems at a particular drive level
     paths = {s:{e:None for e in system_names} for s in system_names}
 
     # Generate this now, can be reused
-    possible_jumps = possible_jump_graph(direct_distances, drive_level)
+    possible_jumps = possible_jump_graph(hex_distances, drive_level)
 
     def distance_heuristic(a, b):
-        return direct_distances[a][b]
+        return hex_distances[a][b]
 
     for start in system_names:
         for end in system_names:
@@ -145,7 +145,7 @@ def find_jump_paths(direct_distances, drive_level):
                     path_cost = 0
                     prev_node = start
                     for node in path:
-                        distance = direct_distances[prev_node][node]
+                        distance = hex_distances[prev_node][node]
                         time = 6 * distance / drive_level
                         assert 0 <= time <= 6, "should not be a self loop or exceed jump validity for the drive level"
                         path_cost += time
@@ -156,11 +156,11 @@ def find_jump_paths(direct_distances, drive_level):
 
     return paths
 
-def find_all_jump_paths(direct_distances, max_drive_level=6):
+def find_all_jump_paths(hex_distances, max_drive_level=6):
     # Optimal paths between systems at all drive levels between 1 and max_drive_level
     all_paths = dict()
     for level in range(1, max_drive_level + 1):
-        paths = find_jump_paths(direct_distances, level)
+        paths = find_jump_paths(hex_distances, level)
         all_paths[level] = paths
     return all_paths
 
@@ -234,7 +234,7 @@ def dump_yaml(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, compact_json, systems, direct_distances, paths):
+def write_reports(output_dir, compact_json, systems, hex_distances, paths):
     os.makedirs(output_dir, exist_ok=True)
 
     def dump(obj, prefix):
@@ -244,8 +244,8 @@ def write_reports(output_dir, compact_json, systems, direct_distances, paths):
     systems_file = os.path.join(output_dir, "systems")
     dump(systems, systems_file)
 
-    direct_distances_file = os.path.join(output_dir, "direct_distances")
-    dump(direct_distances, direct_distances_file)
+    hex_distances_file = os.path.join(output_dir, "hex_distances")
+    dump(hex_distances, hex_distances_file)
 
     paths_file = os.path.join(output_dir, "paths")
     dump(paths, paths_file)
@@ -265,9 +265,9 @@ def process(input, output_dir, max_drive_level, compact_json):
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
-        direct_distances = cube_distances_complete(systems)
-        paths = find_all_jump_paths(direct_distances, max_drive_level)
-        write_reports(output_dir, compact_json, systems, direct_distances, paths)
+        hex_distances = cube_distances_complete(systems)
+        paths = find_all_jump_paths(hex_distances, max_drive_level)
+        write_reports(output_dir, compact_json, systems, hex_distances, paths)
 
 def main():
 
