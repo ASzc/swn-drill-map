@@ -98,7 +98,7 @@ def pathfind(graph, start, end, heuristic):
     # Determine path via came_from
     path = []
     while current in came_from:
-        current = came_from["current"]
+        current = came_from[current]
         path.append(current)
 
     return JumpPath(path, cost)
@@ -236,7 +236,7 @@ def write_reports(output_dir, systems, direct_distances, paths):
     direct_distances_file = os.path.join(output_dir, "direct_distances")
     dump(direct_distances, direct_distances_file)
 
-    paths_file = os.path.join(output_dir, "paths.json")
+    paths_file = os.path.join(output_dir, "paths")
     dump(paths, paths_file)
 
 #
