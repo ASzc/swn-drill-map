@@ -71,10 +71,24 @@ def pathfind(graph, start, end, heuristic):
     return JumpPath(path, cost)
 
 def possible_jump_graph(direct_distances, drive_level):
-    graph = None
+    system_names = sorted(direct_distances.keys())
 
-    # TODO a jump is valid for a drive_level if the p2p distance is less than or equal
-    # TODO iterate through all of direct_distances, adding a edge to the graph for each valid jump
+    # Mapping of node name to list of outgoing edges
+    # TODO needs to have weights attached to the edges
+    graph = {s:[] for s in system_names}
+
+    for start in system_names:
+        for end in system_names:
+            distance = direct_distances[start][end]
+
+            # A jump is valid for the current drive if the distance is less than or equal to the drive level
+            if 1 <= distance <= drive_level:
+                # Edge weight/cost is (6 days * hexes) / drive_level
+                weight = 6 * distance / drive_level
+                # Weight will never exceed 6 because of jump validity restriction
+                assert 1 <= weight <= 6
+
+                # TODO add edge to graph from start to end with weight
 
     return graph
 
