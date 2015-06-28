@@ -30,17 +30,53 @@ def cube_distances_complete(systems):
     direct = dict()
 
     for start in systems:
-        if start not in direct:
-            direct[start] = dict()
-        for end in systems:
-            if end not in direct:
-                direct[end] = dict()
+        if start.name not in direct:
+            direct[start.name] = dict()
 
-            distance = cube_distance(start, end)
-            direct[start][end] = distance
-            direct[end][start] = distance
+        for end in systems:
+            if end.name not in direct:
+                direct[end.name] = dict()
+
+            distance = cube_distance(start.cube, end.cube)
+            # Could optimise by storing reverse distance (end->start) early
+            direct[start.name][end.name] = distance
 
     return direct
+
+#
+# Pathfinding
+#
+
+def pathfind(start, end, heuristic):
+    # TODO A*
+    pass
+
+def find_jump_paths(direct_distances, drive_level):
+    # Optimal paths between systems at a particular drive level
+    paths = dict()
+
+    system_names = sorted(direct_distances.keys())
+
+    for start in system_names:
+        if start not in paths:
+            paths[start] = dict()
+
+        for end in system_names:
+            if end not in paths:
+                paths[end] = dict()
+
+            path = pathfind(start, end, lambda s,e: direct_distances[s][e])
+            # Could optimise by storing reverse path (end->start) early
+            paths[start][end] = path
+
+    return paths
+
+def find_all_jump_paths(direct_distances, max_drive_level=6):
+    # Optimal paths between systems at all drive levels between 1 and max_drive_level
+    paths = dict()
+    for level in range(1, max_drive_level + 1):
+        paths[level] = find_jump_paths(direct_distances, level)
+    return paths
 
 #
 # Read
@@ -86,7 +122,7 @@ def read_tiddlywiki(input):
 #
 
 def dump_json(obj, path):
-    with open(path) as f:
+    with open(path, "w") as f:
         json.dump(
             obj=obj,
             fp=f,
@@ -101,11 +137,14 @@ def dump_json(obj, path):
 def write_reports(output_dir, systems, direct_distances):
     os.makedirs(output_dir, exist_ok=True)
 
-    systems_file = os.path.path.join(output_dir, "systems.json")
-    direct_distances_file os.path.path.join(output_dir, "direct_distances.json")
-
+    systems_file = os.path.join(output_dir, "systems.json")
     dump_json(systems, systems_file)
+
+    direct_distances_file = os.path.join(output_dir, "direct_distances.json")
     dump_json(direct_distances, direct_distances_file)
+
+    #paths_file = os.path.join(output_dir, "paths.json")
+    #dump_json(paths, paths_file)
 
 #
 # Main
@@ -114,17 +153,18 @@ def write_reports(output_dir, systems, direct_distances):
 def process(input, output_dir):
     # Open stream if required
     if input == "-":
-        process(sys.stdin, output, drive_level, output_func)
+        process(sys.stdin, output_dir)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            process(i, output, drive_level, output_func)
+            process(i, output_dir)
 
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
-        # TODO pathfinding with different drive levels
-        write_reports(output_dir, systems, direct_distances)
+        paths = find_all_jump_paths(direct_distances, 6)
+        # TODO calculate time costs by combining paths and direct_distances? Or can we get that from A* immediately?
+        write_reports(output_dir, systems, direct_distances, paths)
 
 def main():
 
