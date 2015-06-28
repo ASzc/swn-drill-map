@@ -2,6 +2,8 @@
 
 import argparse
 import collections
+import json
+import os
 import re
 import string
 import sys
@@ -22,6 +24,23 @@ def offset_to_cube(col, row):
 
 def cube_distance(a, b):
     return max(abs(a.x - b.x), abs(a.y - b.y), abs(a.z - b.z))
+
+def cube_distances_complete(systems):
+    # Complete graph of the direct point-to-point distances between hexes
+    direct = dict()
+
+    for start in systems:
+        if start not in direct:
+            direct[start] = dict()
+        for end in systems:
+            if end not in direct:
+                direct[end] = dict()
+
+            distance = cube_distance(start, end)
+            direct[start][end] = distance
+            direct[end][start] = distance
+
+    return direct
 
 #
 # Read
@@ -66,47 +85,48 @@ def read_tiddlywiki(input):
 # Write
 #
 
-def write_tsv(output, systems):
-    # TODO yaml a better option?
-    for system in systems:
-        prefix = ""
-        for e in system:
-            output.write(prefix)
-            prefix = "\t"
+def dump_json(obj, path):
+    with open(path) as f:
+        json.dump(
+            obj=obj,
+            fp=f,
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=4,
+        )
 
-            if isinstance(e, tuple):
-                output.write(",".join(str(p) for p in e))
-            else:
-                output.write(str(e))
-        output.write("\n")
-
-#def write_graphml():
+#def dump_graphml():
 #    pass
+
+def write_reports(output_dir, systems, direct_distances):
+    os.makedirs(output_dir, exist_ok=True)
+
+    systems_file = os.path.path.join(output_dir, "systems.json")
+    direct_distances_file os.path.path.join(output_dir, "direct_distances.json")
+
+    dump_json(systems, systems_file)
+    dump_json(direct_distances, direct_distances_file)
 
 #
 # Main
 #
 
-def convert(input, output, drive_level, output_func):
-    # Open streams if required
+def process(input, output_dir):
+    # Open stream if required
     if input == "-":
-        convert(sys.stdin, output, drive_level, output_func)
+        process(sys.stdin, output, drive_level, output_func)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            convert(i, output, drive_level, output_func)
-    elif output == "-":
-        convert(input, sys.stdout, drive_level, output_func)
-    elif isinstance(output, str):
-        with open(output, "w") as o:
-            convert(input, o, drive_level, output_func)
+            process(i, output, drive_level, output_func)
 
-    # Do actual conversion
+    # Do actual processing
     else:
         systems = read_tiddlywiki(input)
-        output_func(output, systems)
+        direct_distances = cube_distances_complete(systems)
+        # TODO pathfinding with different drive levels
+        write_reports(output_dir, systems, direct_distances)
 
 def main():
-    output_fmts = {n[6:]: f for n,f in globals().items() if n.startswith("write_")}
 
     # TODO add subcommands? drive isn't always needed if tsv won't contain distance info (any readable way to encode that info in tsv?). Probably can just generate a directory of files?
 
@@ -119,14 +139,17 @@ def main():
     # TODO: note that the visualisation of a spike drive level >1 is there are more connections added between the nodes (Sectors), with different time weights attached to them (drive level =1, at most one connection between nodes, of six day length). Should be able to use standard shortest-path algos on this problem. Heuristic is point-to-point (single-hop, infinite drive level) distance (can precomputed easily)? ==> Admissiblity of that for A*?
 
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
-    parser.add_argument("-o", "--output-format", default="tsv", choices=sorted(output_fmts), help="Format to use for the output. Default: tsv")
-    parser.add_argument("drive", type=int, choices=range(1,6+1), help="Starship drive level.")
+    parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
-    parser.add_argument("output", help="graphml file to write. Use - for stdout.")
 
     args = parser.parse_args()
 
-    convert(args.input, args.output, args.drive, output_fmts[args.output_format])
+    if args.output_dir is None:
+        output_dir = os.path.splitext(os.path.basename(os.path.normpath(args.input)))[0]
+    else:
+        output_dir = args.output_dir
+
+    process(args.input, output_dir)
 
 if __name__ == "__main__":
     main()

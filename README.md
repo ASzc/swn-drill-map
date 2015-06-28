@@ -1,6 +1,6 @@
 # SWN Transit Map
 
-Create ship transit data for a particular ship within a Stars Without Number sector.
+Create ship transit data within a Stars Without Number sector.
 
 ## Basic Usage
 
