@@ -1,6 +1,6 @@
 # SWN Transit Map
 
-Create ship transit data within a Stars Without Number sector.
+Find ship transit data within a Stars Without Number sector.
 
 ## Basic Usage
 
@@ -9,13 +9,22 @@ Create ship transit data within a Stars Without Number sector.
 - Python 3.3+
   - Beautiful Soup 4
 - A TiddlyWiki created by the SWN Sector Generator
-- The level of the ship's spike drive
 
 ### Example
 
-This command will write the transit data (for a level 3 spike drive in the Asgard Sigma sector) to stdout in tab-seperated-values format
+This command will write the transit data (for the Asgard Sigma sector) into files within the directory `asgard_sigma`.
 
-    $ ./transit.py 3 asgard_sigma.html -
+    $ ./transit.py asgard_sigma.html
+
+### Output files
+
+- `systems.json`: JSON array of
+  - System Name
+  - Offset Coordinates
+  - Cube Coordinates
+- `direct_distances.json`: JSON object of
+  - System Name
+  - Distances to every System if a single jump were possible
 
 ## References
 

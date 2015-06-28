@@ -27,19 +27,15 @@ def cube_distance(a, b):
 
 def cube_distances_complete(systems):
     # Complete graph of the direct point-to-point distances between hexes
-    direct = dict()
+    direct = {s.name:{e.name:None for e in systems} for s in systems}
 
     for start in systems:
-        if start.name not in direct:
-            direct[start.name] = dict()
-
         for end in systems:
-            if end.name not in direct:
-                direct[end.name] = dict()
-
-            distance = cube_distance(start.cube, end.cube)
-            # Could optimise by storing reverse distance (end->start) early
-            direct[start.name][end.name] = distance
+            # Optimise by reusing reverse distance (end->start)
+            if end.name not in direct[start.name]:
+                distance = cube_distance(start.cube, end.cube)
+                direct[start.name][end.name] = distance
+                direct[end.name][start.name] = distance
 
     return direct
 
@@ -52,22 +48,19 @@ def pathfind(start, end, heuristic):
     pass
 
 def find_jump_paths(direct_distances, drive_level):
-    # Optimal paths between systems at a particular drive level
-    paths = dict()
-
     system_names = sorted(direct_distances.keys())
 
+    # Optimal paths between systems at a particular drive level
+    paths = {s:{e:None for e in system_names} for s in system_names}
+
     for start in system_names:
-        if start not in paths:
-            paths[start] = dict()
-
         for end in system_names:
-            if end not in paths:
-                paths[end] = dict()
-
-            path = pathfind(start, end, lambda s,e: direct_distances[s][e])
-            # Could optimise by storing reverse path (end->start) early
-            paths[start][end] = path
+            # Optimise by reusing reverse path (end->start)
+            if end not in direct[start]:
+                path = pathfind(start, end, lambda s,e: direct_distances[s][e])
+                paths[start][end] = path
+                # TODO total cost will be the same in a reversed path, don't know how it will be stored yet
+                paths[end][start] = list(reversed(path))
 
     return paths
 
