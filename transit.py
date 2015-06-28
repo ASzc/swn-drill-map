@@ -70,23 +70,42 @@ def pathfind(graph, start, end, heuristic):
     frontier_tiebreaker = itertools.count()
     heapq.heappush(frontier, (0, next(frontier_tiebreaker), start))
 
-    came_from = {start: None}
+    came_from = {}
     cost_so_far = {start: 0}
 
     while frontier:
+        current = heapq.heappop(frontier)[2]
 
-        pass
+        if current == end:
+            break
+
+        # This optimisation requires a monotonic/consistent heuristic
+        already_checked.add(current)
+
+        neighbours = TODO
+
+        for neighbour in neighbours:
+            if neighbour not in already_checked:
+                new_cost = cost_so_far[current] + graph[] # TODO cost so far, plus actual edge cost between current and neighbour
+
+                if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                    cost_so_far[neighbor] = new_cost
+                    came_from[neighbour] = current
+                    priority = new_cost + heuristic(neighbour, end)
+                    heapq.heappush(frontier, (priority, next(frontier_tiebreaker), neighbour))
+
+                # TODO ...
 
 
 
+    # Determine path via came_from
+    path = []
+    while current in came_from:
+        current = came_from["current"]
+        path.append(current)
+        cost += edge_cost
 
-
-    # TODO extract path via came_from
-
-    path = None
-    cost = None
-
-    return JumpPath(path, cost)
+    return JumpPath(path, new_cost)
 
 GraphEdge = collections.namedtuple("GraphEdge", ["destination", "cost"])
 # Not currently planning for this to be directly serialised, so no yaml representer
@@ -121,11 +140,14 @@ def find_jump_paths(direct_distances, drive_level):
     # Generate this now, can be reused
     possible_jumps = possible_jump_graph(direct_distances, drive_level)
 
+    def distance_heuristic(a, b):
+        return direct_distances[a][b]
+
     for start in system_names:
         for end in system_names:
             # Optimise by reusing reverse path (end->start)
             if paths[start][end] is None:
-                path = pathfind(possible_jumps, start, end, lambda s,e: direct_distances[s][e])
+                path = pathfind(possible_jumps, start, end, distance_heuristic)
                 paths[start][end] = path
                 paths[end][start] = JumpPath(list(reversed(path.nodes)), path.cost)
 
