@@ -43,7 +43,7 @@ def cube_distances_complete(systems):
 # Pathfinding
 #
 
-def pathfind(start, end, heuristic):
+def pathfind(graph, start, end, heuristic):
     # TODO A*
     pass
 
@@ -53,11 +53,14 @@ def find_jump_paths(direct_distances, drive_level):
     # Optimal paths between systems at a particular drive level
     paths = {s:{e:None for e in system_names} for s in system_names}
 
+    # TODO need to pregenerate a graph with all possible jumps at this drive_level
+    possible_jumps = None
+
     for start in system_names:
         for end in system_names:
             # Optimise by reusing reverse path (end->start)
             if paths[start][end] is None:
-                path = pathfind(start, end, lambda s,e: direct_distances[s][e])
+                path = pathfind(possible_jumps, start, end, lambda s,e: direct_distances[s][e])
                 paths[start][end] = path
                 # TODO total cost will be the same in a reversed path, don't know how it will be stored yet
                 paths[end][start] = list(reversed(path))
