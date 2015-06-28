@@ -242,7 +242,7 @@ def write_reports(output_dir, systems, direct_distances, paths, costs):
     paths_file = os.path.join(output_dir, "paths")
     dump(paths, paths_file)
 
-    costs_file = os.path.join(output_dir, "costs")
+    costs_file = os.path.join(output_dir, "jump_costs")
     dump(costs, costs_file)
 
 #
