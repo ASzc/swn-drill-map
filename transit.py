@@ -91,6 +91,8 @@ def pathfind(graph, start, end, heuristic):
                     came_from[neighbour] = current
                     priority = new_cost + heuristic(neighbour, end)
                     heapq.heappush(frontier, (priority, next(frontier_tiebreaker), neighbour))
+    else:
+        return None
 
     # Total cost of the found path
     cost = cost_so_far[current]
@@ -98,10 +100,10 @@ def pathfind(graph, start, end, heuristic):
     # Determine path via came_from
     path = []
     while current in came_from:
-        current = came_from[current]
         path.append(current)
+        current = came_from[current]
 
-    return JumpPath(path, cost)
+    return JumpPath(list(reversed(path)), cost)
 
 def possible_jump_graph(direct_distances, drive_level):
     system_names = sorted(direct_distances.keys())
@@ -141,8 +143,9 @@ def find_jump_paths(direct_distances, drive_level):
             # Optimise by reusing reverse path (end->start)
             if paths[start][end] is None:
                 path = pathfind(possible_jumps, start, end, distance_heuristic)
-                paths[start][end] = path
-                paths[end][start] = JumpPath(list(reversed(path.nodes)), path.cost)
+                if path is not None:
+                    paths[start][end] = path
+                    paths[end][start] = JumpPath(list(reversed(path.nodes)), path.cost)
 
     return (paths, possible_jumps)
 
@@ -203,14 +206,14 @@ def read_tiddlywiki(input):
 # Write
 #
 
-def dump_json(obj, path):
+def dump_json(obj, path, compact_json):
     with open(path + ".json", "w") as f:
         json.dump(
             obj=obj,
             fp=f,
             ensure_ascii=False,
-            sort_keys=not yaml_available,
-            indent=None if yaml_available else 4,
+            sort_keys=not compact_json,
+            indent=None if compact_json else 4,
         )
 
 def dump_yaml(obj, path):
@@ -226,11 +229,11 @@ def dump_yaml(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, systems, direct_distances, paths, costs):
+def write_reports(output_dir, compact_json, systems, direct_distances, paths, costs):
     os.makedirs(output_dir, exist_ok=True)
 
     def dump(obj, prefix):
-        dump_json(obj, prefix)
+        dump_json(obj, prefix, compact_json)
         dump_yaml(obj, prefix)
 
     systems_file = os.path.join(output_dir, "systems")
@@ -249,20 +252,20 @@ def write_reports(output_dir, systems, direct_distances, paths, costs):
 # Main
 #
 
-def process(input, output_dir, max_drive_level):
+def process(input, output_dir, max_drive_level, compact_json):
     # Open stream if required
     if input == "-":
-        process(sys.stdin, output_dir, max_drive_level)
+        process(sys.stdin, output_dir, max_drive_level, compact_json)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            process(i, output_dir, max_drive_level)
+            process(i, output_dir, max_drive_level, compact_json)
 
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
         paths, costs = find_all_jump_paths(direct_distances, max_drive_level)
-        write_reports(output_dir, systems, direct_distances, paths, costs)
+        write_reports(output_dir, compact_json, systems, direct_distances, paths, costs)
 
 def main():
 
@@ -279,6 +282,7 @@ def main():
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
     parser.add_argument("-m", "--max-drive-level", default=6, help="Maximum spike drive level. Default: 6")
+    parser.add_argument("-c", "--compact-json", action="store_true", help="Do not pretty-print the .json files.")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
 
     args = parser.parse_args()
@@ -288,7 +292,7 @@ def main():
     else:
         output_dir = args.output_dir
 
-    process(args.input, output_dir, args.max_drive_level)
+    process(args.input, output_dir, args.max_drive_level, args.compact_json)
 
 if __name__ == "__main__":
     main()
