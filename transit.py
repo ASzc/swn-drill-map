@@ -144,14 +144,17 @@ def find_jump_paths(direct_distances, drive_level):
                 paths[start][end] = path
                 paths[end][start] = JumpPath(list(reversed(path.nodes)), path.cost)
 
-    return paths
+    return (paths, possible_jumps)
 
 def find_all_jump_paths(direct_distances, max_drive_level=6):
     # Optimal paths between systems at all drive levels between 1 and max_drive_level
     all_paths = dict()
+    all_path_costs = dict()
     for level in range(1, max_drive_level + 1):
-        all_paths[level] = find_jump_paths(direct_distances, level)
-    return all_paths
+        paths, costs = find_jump_paths(direct_distances, level)
+        all_paths[level] = paths
+        all_path_costs[level] = costs
+    return (all_paths, all_path_costs)
 
 #
 # Read
@@ -223,7 +226,7 @@ def dump_yaml(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, systems, direct_distances, paths):
+def write_reports(output_dir, systems, direct_distances, paths, costs):
     os.makedirs(output_dir, exist_ok=True)
 
     def dump(obj, prefix):
@@ -238,6 +241,9 @@ def write_reports(output_dir, systems, direct_distances, paths):
 
     paths_file = os.path.join(output_dir, "paths")
     dump(paths, paths_file)
+
+    costs_file = os.path.join(output_dir, "costs")
+    dump(costs, costs_file)
 
 #
 # Main
@@ -255,8 +261,8 @@ def process(input, output_dir, max_drive_level):
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
-        paths = find_all_jump_paths(direct_distances, max_drive_level)
-        write_reports(output_dir, systems, direct_distances, paths)
+        paths, costs = find_all_jump_paths(direct_distances, max_drive_level)
+        write_reports(output_dir, systems, direct_distances, paths, costs)
 
 def main():
 
