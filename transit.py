@@ -55,12 +55,26 @@ def cube_distances_complete(systems):
 # Pathfinding
 #
 
+JumpPath = collections.namedtuple("JumpPath", ["nodes", "cost"])
+if yaml_available:
+    yaml.add_representer(JumpPath, namedtuple_representer("jump_path"))
+
 def pathfind(graph, start, end, heuristic):
     # TODO A*
+
     pass
+
+
+    path = None
+    cost = None
+
+    return JumpPath(path, cost)
 
 def possible_jump_graph(direct_distances, drive_level):
     graph = None
+
+    # TODO a jump is valid for a drive_level if the p2p distance is less than or equal
+    # TODO iterate through all of direct_distances, adding a edge to the graph for each valid jump
 
     return graph
 
@@ -79,8 +93,7 @@ def find_jump_paths(direct_distances, drive_level):
             if paths[start][end] is None:
                 path = pathfind(possible_jumps, start, end, lambda s,e: direct_distances[s][e])
                 paths[start][end] = path
-                # TODO total cost will be the same in a reversed path, don't know how it will be stored yet
-                paths[end][start] = list(reversed(path))
+                paths[end][start] = JumpPath(list(reversed(path.nodes)), path.cost)
 
     return paths
 
@@ -90,19 +103,6 @@ def find_all_jump_paths(direct_distances, max_drive_level=6):
     for level in range(1, max_drive_level + 1):
         all_paths[level] = find_jump_paths(direct_distances, level)
     return all_paths
-
-def find_all_path_costs(direct_distances, all_paths):
-    costs = dict()
-
-    for level, paths in all_paths.items():
-        path_names = sorted(all_paths.keys())
-
-        for start in path_names:
-            for end in path_names:
-                # TODO load path nodes, sum the individual costs of the jumps, lookup those in direct_distances
-                costs[level][start][end] = None
-
-    return costs
 
 #
 # Read
@@ -207,9 +207,7 @@ def process(input, output_dir, max_drive_level):
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
         #paths = find_all_jump_paths(direct_distances, max_drive_level)
-        #path_costs = find_all_path_costs(direct_distances, costs)
         paths = None
-        path_costs = None
         write_reports(output_dir, systems, direct_distances, paths, path_costs)
 
 def main():
