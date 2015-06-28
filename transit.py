@@ -86,8 +86,8 @@ def pathfind(graph, start, end, heuristic):
             if neighbour not in already_checked:
                 new_cost = cost_so_far[current] + graph[current][neighbour]
 
-                if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
-                    cost_so_far[neighbor] = new_cost
+                if neighbour not in cost_so_far or new_cost < cost_so_far[neighbour]:
+                    cost_so_far[neighbour] = new_cost
                     came_from[neighbour] = current
                     priority = new_cost + heuristic(neighbour, end)
                     heapq.heappush(frontier, (priority, next(frontier_tiebreaker), neighbour))
@@ -223,7 +223,7 @@ def dump_yaml(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, systems, direct_distances, paths, path_costs):
+def write_reports(output_dir, systems, direct_distances, paths):
     os.makedirs(output_dir, exist_ok=True)
 
     def dump(obj, prefix):
@@ -236,8 +236,8 @@ def write_reports(output_dir, systems, direct_distances, paths, path_costs):
     direct_distances_file = os.path.join(output_dir, "direct_distances")
     dump(direct_distances, direct_distances_file)
 
-    #paths_file = os.path.join(output_dir, "paths.json")
-    #dump(paths, paths_file)
+    paths_file = os.path.join(output_dir, "paths.json")
+    dump(paths, paths_file)
 
 #
 # Main
@@ -255,9 +255,8 @@ def process(input, output_dir, max_drive_level):
     else:
         systems = read_tiddlywiki(input)
         direct_distances = cube_distances_complete(systems)
-        #paths = find_all_jump_paths(direct_distances, max_drive_level)
-        paths = None
-        write_reports(output_dir, systems, direct_distances, paths, path_costs)
+        paths = find_all_jump_paths(direct_distances, max_drive_level)
+        write_reports(output_dir, systems, direct_distances, paths)
 
 def main():
 
