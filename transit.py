@@ -137,22 +137,19 @@ def find_jump_paths(hex_distances, drive_level):
 
     for start in system_names:
         for end in system_names:
-            # Optimise by reusing reverse path (end->start)
-            if paths[start][end] is None:
-                path = pathfind(possible_jumps, start, end, distance_heuristic)
-                if path is not None:
-                    # Calculate time cost
-                    path_cost = 0
-                    prev_node = start
-                    for node in path:
-                        distance = hex_distances[prev_node][node]
-                        time = 6 * distance / drive_level
-                        assert 0 <= time <= 6, "should not be a self loop or exceed jump validity for the drive level"
-                        path_cost += time
-                        prev_node = node
+            path = pathfind(possible_jumps, start, end, distance_heuristic)
+            if path is not None:
+                # Calculate time cost
+                path_cost = 0
+                prev_node = start
+                for node in path:
+                    distance = hex_distances[prev_node][node]
+                    time = 6 * distance / drive_level
+                    assert 0 <= time <= 6, "should not be a self loop or exceed jump validity for the drive level"
+                    path_cost += time
+                    prev_node = node
 
-                    paths[start][end] = JumpPath(path, path_cost)
-                    paths[end][start] = JumpPath(list(reversed(path)), path_cost)
+                paths[start][end] = JumpPath(path, path_cost)
 
     return paths
 
