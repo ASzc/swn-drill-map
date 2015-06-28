@@ -8,6 +8,7 @@ Find ship transit data within a Stars Without Number sector.
 
 - Python 3.3+
   - Beautiful Soup 4
+  - Optional: PyYAML
 - A TiddlyWiki created by the SWN Sector Generator
 
 ### Example
@@ -18,13 +19,22 @@ This command will write the transit data (for the Asgard Sigma sector) into file
 
 ### Output files
 
-- `systems.json`: JSON array of
+Data structures may be written in both json and yaml format. If you don't have PyYAML installed, only json will be written.
+
+- `systems`:
   - System Name
   - Offset Coordinates
   - Cube Coordinates
-- `direct_distances.json`: JSON object of
+- `hex_distances`:
   - System Name
-  - Distances to every System if a single jump were possible
+    - Hex Distances to every System
+- `paths`:
+  - Spike Drive Level
+    - Start System Name
+      - End System Name
+        - null if not reachable **OR**
+        - list of systems in the path
+        - time cost (in days)
 
 ## References
 
