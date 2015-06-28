@@ -82,11 +82,9 @@ def pathfind(graph, start, end, heuristic):
         # This optimisation requires a monotonic/consistent heuristic
         already_checked.add(current)
 
-        neighbours = TODO
-
-        for neighbour in neighbours:
+        for neighbour in graph[current].keys():
             if neighbour not in already_checked:
-                new_cost = cost_so_far[current] + graph[] # TODO cost so far, plus actual edge cost between current and neighbour
+                new_cost = cost_so_far[current] + graph[current][neighbour]
 
                 if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
                     cost_so_far[neighbor] = new_cost
@@ -94,27 +92,22 @@ def pathfind(graph, start, end, heuristic):
                     priority = new_cost + heuristic(neighbour, end)
                     heapq.heappush(frontier, (priority, next(frontier_tiebreaker), neighbour))
 
-                # TODO ...
-
-
+    # Total cost of the found path
+    cost = cost_so_far[current]
 
     # Determine path via came_from
     path = []
     while current in came_from:
         current = came_from["current"]
         path.append(current)
-        cost += edge_cost
 
-    return JumpPath(path, new_cost)
-
-GraphEdge = collections.namedtuple("GraphEdge", ["destination", "cost"])
-# Not currently planning for this to be directly serialised, so no yaml representer
+    return JumpPath(path, cost)
 
 def possible_jump_graph(direct_distances, drive_level):
     system_names = sorted(direct_distances.keys())
 
-    # Mapping of node name to list of outgoing edges
-    graph = {s:[] for s in system_names}
+    # Mapping of node name to map of destination node names to costs
+    graph = {s:{} for s in system_names}
 
     for start in system_names:
         for end in system_names:
@@ -124,10 +117,10 @@ def possible_jump_graph(direct_distances, drive_level):
             if 1 <= distance <= drive_level:
                 # Edge weight/cost is (6 days * hexes) / drive_level
                 weight = 6 * distance / drive_level
-                # Weight will never exceed 6 because of jump validity restriction
-                assert 1 <= weight <= 6
+                assert 0 <= weight <= 6, "should not be a self loop or exceed jump validity for the drive level"
 
-                graph[start] = GraphEdge(end, weight)
+                assert end not in graph[start], "should be only one edge weight between two nodes"
+                graph[start][end] = weight
 
     return graph
 
