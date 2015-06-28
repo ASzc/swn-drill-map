@@ -70,11 +70,13 @@ def pathfind(graph, start, end, heuristic):
 
     return JumpPath(path, cost)
 
+GraphEdge = collections.namedtuple("GraphEdge", ["destination", "cost"])
+# Not currently planning for this to be directly serialised, so no yaml representer
+
 def possible_jump_graph(direct_distances, drive_level):
     system_names = sorted(direct_distances.keys())
 
     # Mapping of node name to list of outgoing edges
-    # TODO needs to have weights attached to the edges
     graph = {s:[] for s in system_names}
 
     for start in system_names:
@@ -88,7 +90,7 @@ def possible_jump_graph(direct_distances, drive_level):
                 # Weight will never exceed 6 because of jump validity restriction
                 assert 1 <= weight <= 6
 
-                # TODO add edge to graph from start to end with weight
+                graph[start] = GraphEdge(end, weight)
 
     return graph
 
