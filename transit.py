@@ -32,7 +32,7 @@ def cube_distances_complete(systems):
     for start in systems:
         for end in systems:
             # Optimise by reusing reverse distance (end->start)
-            if end.name not in direct[start.name]:
+            if direct[start.name][end.name] is None:
                 distance = cube_distance(start.cube, end.cube)
                 direct[start.name][end.name] = distance
                 direct[end.name][start.name] = distance
@@ -56,7 +56,7 @@ def find_jump_paths(direct_distances, drive_level):
     for start in system_names:
         for end in system_names:
             # Optimise by reusing reverse path (end->start)
-            if end not in direct[start]:
+            if paths[start][end] is None:
                 path = pathfind(start, end, lambda s,e: direct_distances[s][e])
                 paths[start][end] = path
                 # TODO total cost will be the same in a reversed path, don't know how it will be stored yet
@@ -127,7 +127,7 @@ def dump_json(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, systems, direct_distances):
+def write_reports(output_dir, systems, direct_distances, paths):
     os.makedirs(output_dir, exist_ok=True)
 
     systems_file = os.path.join(output_dir, "systems.json")
