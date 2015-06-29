@@ -93,10 +93,10 @@ HexagonGrid.prototype.redraw = function() {
             var color;
             var name;
             if (hex === null) {
-                color = "#eee";
+                color = "#fff";
                 name = null;
             } else {
-                color = "#ddd";
+                color = "#eee";
                 name = hex["name"];
             }
 
@@ -132,14 +132,16 @@ HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
     this.context.closePath();
     this.context.stroke();
 
+    // TODO scale font sizes based on width of hexes
+
     this.context.textAlign = "start";
-    this.context.font = "8px sans";
-    this.context.fillStyle = "#444";
+    this.context.font = "normal normal 8px sans";
+    this.context.fillStyle = "#333";
     this.context.fillText(coordtext, x0 + (this.width / 2) - (this.width/4), y0 + (this.height - 5));
 
     if (name !== null) {
         this.context.textAlign = "center";
-        this.context.font = "10px sans";
+        this.context.font = "normal bold 10px sans";
         this.context.fillStyle = "#000";
         this.context.fillText(name, x0 + (this.width/2), y0 + (this.height / 2));
     }
