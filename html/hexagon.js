@@ -62,7 +62,7 @@ function HexagonGrid(canvasId, systems) {
     this.canvasOriginY = 0;
 
     // Events
-    //this.canvas.addEventListener("mousedown", this.clickEvent.bind(this), false);
+    this.canvas.addEventListener("click", this.clickEvent.bind(this));
 };
 
 //HexagonGrid.prototype.drawHexGrid = function (rows, cols, originX, originY, isDebug) {
@@ -104,7 +104,7 @@ HexagonGrid.prototype.redraw = function() {
                 } else if (path_index !== -1) {
                     color = "#CCE7F4";
                 } else {
-                    color = "#E3F3FB";
+                    color = "#eee";
                 }
             }
             // TODO different colours for:
@@ -241,7 +241,7 @@ HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
         }
     }
 
-    return  { row: row, column: column };
+    return  { y: row, x: column };
 };
 
 
@@ -261,17 +261,26 @@ HexagonGrid.prototype.isPointInTriangle = function isPointInTriangle(pt, v1, v2,
 };
 
 HexagonGrid.prototype.clickEvent = function (e) {
-    var mouseX = e.pageX;
-    var mouseY = e.pageY;
+    if (e.button === 0) {
+        var mouseX = e.pageX;
+        var mouseY = e.pageY;
 
-    var localX = mouseX - this.canvasOriginX;
-    var localY = mouseY - this.canvasOriginY;
+        var localX = mouseX - this.canvasOriginX;
+        var localY = mouseY - this.canvasOriginY;
 
-    var tile = this.getSelectedTile(localX, localY);
-    if (tile.column >= 0 && tile.row >= 0) {
-        var drawy = tile.column % 2 == 0 ? (tile.row * this.height) + this.canvasOriginY + 6 : (tile.row * this.height) + this.canvasOriginY + 6 + (this.height / 2);
-        var drawx = (tile.column * this.side) + this.canvasOriginX;
-
-        this.drawHex(drawx, drawy - 6, "rgba(110,110,70,0.3)", "");
-    } 
+        var tile = this.getSelectedTile(localX, localY);
+        if (tile.x >= 0 && tile.y >= 0 && tile.x < this.max_x && tile.y < this.max_y) {
+            var hex = this.offset_model[tile.x][tile.y];
+            if (hex !== null) {
+                var name = hex["name"];
+                var path_index = this.path_model.indexOf(name);
+                if (path_index === -1) {
+                    this.path_model.push(name);
+                } else {
+                    this.path_model.splice(path_index, 1);
+                }
+                this.redraw();
+            }
+        }
+    }
 };
