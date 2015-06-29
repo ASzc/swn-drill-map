@@ -106,10 +106,17 @@ HexagonGrid.prototype.redraw = function() {
 
                     // Is current the head?
                     if (name === path_head_name) {
-                        color = "#B4D9EB";
+                        color = "#E3F3FB";
                     // Is current reachable from head?
                     } else if (available_paths[path_head_name][name] !== null) {
-                        color = "#CCE7F4";
+                        // Is current in the path?
+                        // This is a sub condition so that the path doesn't have to be cleared when user changes through drive levels
+                        var path_index = this.path_model.indexOf(name);
+                        if (path_index !== -1) {
+                            color = "#E3F3FB";
+                        } else {
+                            color = "#CCE7F4";
+                        }
                     } else {
                         color = "#eee";
                     }
