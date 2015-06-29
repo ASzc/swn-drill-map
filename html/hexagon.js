@@ -51,6 +51,9 @@ function HexagonGrid(canvasId, systems) {
         };
     }
 
+    // Create model of path
+    this.path_model = [];
+
     // Drawing setup
     this.canvas = document.getElementById(canvasId);
     this.context = this.canvas.getContext("2d");
@@ -62,12 +65,10 @@ function HexagonGrid(canvasId, systems) {
     //this.canvas.addEventListener("mousedown", this.clickEvent.bind(this), false);
 };
 
-// TODO modify to work with the precalculated json bound to variables in html script tags. Should get row/col count automatically, pick hex size automatically.
-// TODO convert to model + redraw architecture, events change model, redraws happen when scheduled
-// TODO first click, highlight hex, change color of reachable systems. second click on reachable system paints arrows between hops. Could do route planning by allowing this two step input to continue until user resets somehow.
-
 //HexagonGrid.prototype.drawHexGrid = function (rows, cols, originX, originY, isDebug) {
 HexagonGrid.prototype.redraw = function() {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
     // Fit the hex size to the smallest of the canvas dimensions
     var width_candidate = this.canvas.width / (this.max_x + 0.5);
     var height_candidate = this.canvas.height / (this.max_y + 0.5);
@@ -93,12 +94,23 @@ HexagonGrid.prototype.redraw = function() {
             var color;
             var name;
             if (hex === null) {
-                color = "#fff";
                 name = null;
+                color = "#fff";
             } else {
-                color = "#eee";
                 name = hex["name"];
+                var path_index = this.path_model.indexOf(name)
+                if (path_index === 0) {
+                    color = "#B4D9EB";
+                } else if (path_index !== -1) {
+                    color = "#CCE7F4";
+                } else {
+                    color = "#E3F3FB";
+                }
             }
+            // TODO different colours for:
+            // - nodes in path (including start and end)
+            // - maybe special color for start of path
+            // - reachable nodes from the head of the path
 
             var currentHexX;
             var currentHexY;
@@ -114,6 +126,7 @@ HexagonGrid.prototype.redraw = function() {
         }
         offsetColumn = !offsetColumn;
     }
+    // TODO draw arrows between path nodes https://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag
 };
 
 HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
