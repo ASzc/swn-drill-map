@@ -143,6 +143,10 @@ HexagonGrid.prototype.redraw = function() {
         prev_node = node;
     }
 
+    // TODO need to display total cost
+    // TODO need to break path A->B nodes into the jump nodes given by lookup in available_paths (paths.json)
+    // TODO need to display cost per jump, can look up one-hop segment cost in available_paths as well
+
     // Draw arrows using the model and pre-processed array
     this.context.lineWidth = (0.06 * this.width);
     this.context.lineCap = "round";
