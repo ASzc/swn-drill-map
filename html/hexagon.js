@@ -19,7 +19,7 @@ function HexagonGrid(canvasId, systems) {
     // Find the maximum extents of the system offset coordinates
     this.max_x = 0;
     this.max_y = 0;
-    for (system in systems) {
+    for (var system of systems) {
         var x = system[1][0];
         if (x > this.max_x) {
             this.max_x = x;
@@ -29,6 +29,8 @@ function HexagonGrid(canvasId, systems) {
             this.max_y = y;
         }
     }
+    this.max_x++;
+    this.max_y++;
 
     // Create model of blank hexes
     this.offset_model = new Array(this.max_x);
@@ -40,7 +42,7 @@ function HexagonGrid(canvasId, systems) {
     }
 
     // Populate model of hex grid with systems
-    for (system in systems) {
+    for (var system of systems) {
         var x = system[1][0];
         var y = system[1][1];
         var name = system[0];
@@ -57,7 +59,7 @@ function HexagonGrid(canvasId, systems) {
     this.canvasOriginY = 0;
 
     // Events
-    this.canvas.addEventListener("mousedown", this.clickEvent.bind(this), false);
+    //this.canvas.addEventListener("mousedown", this.clickEvent.bind(this), false);
 };
 
 // TODO modify to work with the precalculated json bound to variables in html script tags. Should get row/col count automatically, pick hex size automatically.
@@ -67,22 +69,24 @@ function HexagonGrid(canvasId, systems) {
 //HexagonGrid.prototype.drawHexGrid = function (rows, cols, originX, originY, isDebug) {
 HexagonGrid.prototype.redraw = function() {
     // Fit the hex size to the smallest of the canvas dimensions
-    var width_candidate = this.canvas.width / (this.max_x + 1);
-    var height_candidate = this.canvas.height / (this.max_y + 1);
+    var width_candidate = this.canvas.width / (this.max_x + 0.5);
+    var height_candidate = this.canvas.height / (this.max_y + 0.5);
     var radius;
     if (width_candidate <= height_candidate) {
         radius = width_candidate / 2;
+        this.width = width_candidate;
         this.height = Math.sqrt(3) * radius;
     } else {
         radius = height_candidate / Math.sqrt(3);
         this.width = 2 * radius;
+        this.height = height_candidate;
     }
     this.side = (3 / 2) * radius;
 
     // Draw hexes using the model
     var offsetColumn = false;
     for (var x = 0; x < this.max_x; x++) {
-        for (var y = 0; y < this.may_y; y++) {
+        for (var y = 0; y < this.max_y; y++) {
             var coordtext = x.toString().lpad("0", 2) + y.toString().lpad("0", 2);
 
             var hex = this.offset_model[x][y];
@@ -99,16 +103,16 @@ HexagonGrid.prototype.redraw = function() {
             var currentHexX;
             var currentHexY;
             if (offsetColumn) {
-                currentHexX = col * this.side + originX;
-                currentHexY = (row * this.height) + originY + (this.height * 0.5);
+                currentHexX = x * this.side + this.canvasOriginX;
+                currentHexY = (y * this.height) + this.canvasOriginY + (this.height * 0.5);
             } else {
-                currentHexX = col * this.side + originX;
-                currentHexY = (row * this.height) + originY + (this.height * 0.5);
+                currentHexX = (x * this.side) + this.canvasOriginX;
+                currentHexY = (y * this.height) + this.canvasOriginY;
             }
-            offsetColumn = !offsetColumn;
 
             this.drawHex(currentHexX, currentHexY, color, name, coordtext);
         }
+        offsetColumn = !offsetColumn;
     }
 };
 
