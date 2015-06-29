@@ -146,7 +146,7 @@ HexagonGrid.prototype.redraw = function() {
     // Draw arrows using the model and pre-processed array
     this.context.lineWidth = (0.06 * this.width);
     this.context.lineCap = "round";
-    this.context.strokeStyle = "#3D9363";
+    this.context.strokeStyle = "rgba(61, 147, 99, 0.75)";
     this.context.beginPath();
     for (part of path_from_to) {
         fromC = this.system_coords[part.from];
