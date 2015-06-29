@@ -136,7 +136,7 @@ HexagonGrid.prototype.redraw = function() {
     // Pre-process parts of the path into an array of A->B
     var path_from_to = [];
     var prev_node = null;
-    for (node of path) {
+    for (node of this.path_model) {
         if (prev_node !== null) {
             path_from_to.push({from: prev_node, to: node});
         }
@@ -144,9 +144,9 @@ HexagonGrid.prototype.redraw = function() {
     }
 
     // Draw arrows using the model and pre-processed array
-    this.context.lineWidth = 2.0;
+    this.context.lineWidth = (0.06 * this.width);
     this.context.lineCap = "round";
-    this.context.strokeStyle = "#BBC1EE";
+    this.context.strokeStyle = "#3D9363";
     this.context.beginPath();
     for (part of path_from_to) {
         fromC = this.system_coords[part.from];
@@ -155,7 +155,13 @@ HexagonGrid.prototype.redraw = function() {
         fromV = this.toViewCoords(fromC.x, fromC.y);
         toV = this.toViewCoords(toC.x, toC.y);
 
-        this.drawArrow(fromV.x, fromV.y, toV.x, toV.y, 10); // TODO scale head size against this.width
+        this.drawArrow(
+            fromV.x + (this.width / 2),
+            fromV.y + (this.height / 2),
+            toV.x + (this.width / 2),
+            toV.y + (this.height / 2),
+            (0.19 * this.width)
+        );
     }
     this.context.closePath();
     this.context.stroke();
@@ -163,14 +169,15 @@ HexagonGrid.prototype.redraw = function() {
 
 HexagonGrid.prototype.toViewCoords = function(x, y) {
     // Row is offset when:
-    // - x is even if odd columns are high
-    // - x is odd if even columns are high
-    var offsetColumn = ((x % 2) == 0) && !this.oddColsHigh;
+    // - x is even and odd columns are high
+    // - x is odd and even columns are high
+    var xIsEven = ((x + 1) % 2) === 0;
+    var offsetColumn = (xIsEven && this.oddColsHigh) || (!xIsEven && !this.oddColsHigh);
 
     var viewX = (x * this.side) + this.canvasOriginX;
     var viewY = (y * this.height) + this.canvasOriginY;
     if (offsetColumn) {
-        currentHexY + this.height * 0.5;
+        viewY += this.height * 0.5;
     }
 
     return {x: viewX, y: viewY};
