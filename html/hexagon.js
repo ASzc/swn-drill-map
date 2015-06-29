@@ -15,7 +15,7 @@ String.prototype.lpad = function(padString, length) {
 // Hexagon Grid
 //
 
-function HexagonGrid(canvasId, systems) {
+function HexagonGrid(canvasId, systems, paths) {
     // Find the maximum extents of the system offset coordinates
     this.max_x = 0;
     this.max_y = 0;
@@ -52,6 +52,8 @@ function HexagonGrid(canvasId, systems) {
     }
 
     // Create model of path
+    this.drive_level = 1; // TODO need to be able to change this through UI
+    this.paths = paths;
     this.path_model = [];
 
     // Drawing setup
@@ -85,6 +87,7 @@ HexagonGrid.prototype.redraw = function() {
     this.side = (3 / 2) * radius;
 
     // Draw hexes using the model
+    var available_paths = this.paths[this.drive_level.toString()];
     var offsetColumn = false;
     for (var x = 0; x < this.max_x; x++) {
         for (var y = 0; y < this.max_y; y++) {
@@ -98,19 +101,26 @@ HexagonGrid.prototype.redraw = function() {
                 color = "#fff";
             } else {
                 name = hex["name"];
-                var path_index = this.path_model.indexOf(name)
-                if (path_index === 0) {
-                    color = "#B4D9EB";
-                } else if (path_index !== -1) {
-                    color = "#CCE7F4";
+                if (this.path_model.length > 0) {
+                    var path_head_name = this.path_model[0];
+
+                    // Is current the head?
+                    if (name === path_head_name) {
+                        color = "#B4D9EB";
+                    // Is current reachable from head?
+                    } else if (available_paths[path_head_name][name] !== null) {
+                        color = "#CCE7F4";
+                    } else {
+                        color = "#eee";
+                    }
                 } else {
-                    color = "#eee";
+                    color = "#CCE7F4";
                 }
             }
             // TODO different colours for:
             // - nodes in path (including start and end)
             // - maybe special color for start of path
-            // - reachable nodes from the head of the path
+            // - reachable nodes from the head of the path ==> change text to non-bold instead?
 
             var currentHexX;
             var currentHexY;
@@ -273,6 +283,7 @@ HexagonGrid.prototype.clickEvent = function (e) {
             var hex = this.offset_model[tile.x][tile.y];
             if (hex !== null) {
                 var name = hex["name"];
+                // TODO add to path only if no existing nodes in the path or if this node is reachable from the path head
                 var path_index = this.path_model.indexOf(name);
                 if (path_index === -1) {
                     this.path_model.push(name);
