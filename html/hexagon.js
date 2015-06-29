@@ -30,22 +30,33 @@ function HexagonGrid(canvasId, systems) {
         }
     }
 
-    // Populate model of hex grid with systems
+    // Create model of blank hexes
     this.offset_model = new Array(this.max_x);
     for (var x = 0; x < this.max_x; x++) {
         this.offset_model[x] = new Array(this.max_y);
         for (var y = 0; y < this.max_y; y++) {
-            this.offset_model[x][y] = ;
+            this.offset_model[x][y] = null;
         }
     }
 
+    // Populate model of hex grid with systems
+    for (system in systems) {
+        var x = system[1][0];
+        var y = system[1][1];
+        var name = system[0];
+        this.offset_model[x][y] = {
+            "name": name,
+        };
+    }
 
+    // Drawing setup
     this.canvas = document.getElementById(canvasId);
     this.context = this.canvas.getContext("2d");
 
     this.canvasOriginX = 0;
     this.canvasOriginY = 0;
 
+    // Events
     this.canvas.addEventListener("mousedown", this.clickEvent.bind(this), false);
 };
 
@@ -68,42 +79,40 @@ HexagonGrid.prototype.redraw = function() {
     }
     this.side = (3 / 2) * radius;
 
-
-    var currentHexX;
-    var currentHexY;
-    var debugText = "";
-
+    // Draw hexes using the model
     var offsetColumn = false;
+    for (var x = 0; x < this.max_x; x++) {
+        for (var y = 0; y < this.may_y; y++) {
+            var coordtext = x.toString().lpad("0", 2) + y.toString().lpad("0", 2);
 
-    for (var col = 0; col < cols; col++) {
-        for (var row = 0; row < rows; row++) {
+            var hex = this.offset_model[x][y];
+            var color;
+            var name;
+            if (hex === null) {
+                color = "#eee";
+                name = null;
+            } else {
+                color = "#ddd";
+                name = hex["name"];
+            }
 
-            if (!offsetColumn) {
-                currentHexX = (col * this.side) + originX;
-                currentHexY = (row * this.height) + originY;
+            var currentHexX;
+            var currentHexY;
+            if (offsetColumn) {
+                currentHexX = col * this.side + originX;
+                currentHexY = (row * this.height) + originY + (this.height * 0.5);
             } else {
                 currentHexX = col * this.side + originX;
                 currentHexY = (row * this.height) + originY + (this.height * 0.5);
             }
+            offsetColumn = !offsetColumn;
 
-            if (isDebug) {
-                debugText = col.toString().lpad("0", 2) + row.toString().lpad("0", 2);
-            }
-
-            this.drawHex(currentHexX, currentHexY, "#ddd", debugText);
+            this.drawHex(currentHexX, currentHexY, color, name, coordtext);
         }
-        offsetColumn = !offsetColumn;
     }
 };
 
-HexagonGrid.prototype.drawHexAtColRow = function(column, row, color) {
-    var drawy = column % 2 == 0 ? (row * this.height) + this.canvasOriginY : (row * this.height) + this.canvasOriginY + (this.height / 2);
-    var drawx = (column * this.side) + this.canvasOriginX;
-
-    this.drawHex(drawx, drawy, color, "");
-};
-
-HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, debugText) {
+HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
     this.context.strokeStyle = "#000";
     this.context.beginPath();
     this.context.moveTo(x0 + this.width - this.side, y0);
@@ -113,23 +122,22 @@ HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, debugText) {
     this.context.lineTo(x0 + this.width - this.side, y0 + this.height);
     this.context.lineTo(x0, y0 + (this.height / 2));
 
-    if (fillColor) {
-        this.context.fillStyle = fillColor;
-        this.context.fill();
-    }
+    this.context.fillStyle = fillColor;
+    this.context.fill();
 
     this.context.closePath();
     this.context.stroke();
 
-    if (debugText) {
-        this.context.textAlign = "start";
-        this.context.font = "8px sans";
-        this.context.fillStyle = "#444";
-        this.context.fillText(debugText, x0 + (this.width / 2) - (this.width/4), y0 + (this.height - 5));
+    this.context.textAlign = "start";
+    this.context.font = "8px sans";
+    this.context.fillStyle = "#444";
+    this.context.fillText(coordtext, x0 + (this.width / 2) - (this.width/4), y0 + (this.height - 5));
+
+    if (name !== null) {
         this.context.textAlign = "center";
         this.context.font = "10px sans";
         this.context.fillStyle = "#000";
-        this.context.fillText("Protagoras", x0 + (this.width/2), y0 + (this.height / 2));
+        this.context.fillText(name, x0 + (this.width/2), y0 + (this.height / 2));
     }
 };
 
