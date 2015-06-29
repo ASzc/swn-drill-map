@@ -42,6 +42,7 @@ function HexagonGrid(canvasId, systems, paths) {
     }
 
     // Populate model of hex grid with systems
+    this.system_coords = {};
     for (var system of systems) {
         var x = system[1][0];
         var y = system[1][1];
@@ -49,6 +50,7 @@ function HexagonGrid(canvasId, systems, paths) {
         this.offset_model[x][y] = {
             "name": name,
         };
+        this.system_coords[name] = {x: x, y: y};
     }
 
     // Create model of path
@@ -62,6 +64,8 @@ function HexagonGrid(canvasId, systems, paths) {
 
     this.canvasOriginX = 0;
     this.canvasOriginY = 0;
+
+    this.oddColsHigh = true;
 
     // Events
     this.canvas.addEventListener("click", this.clickEvent.bind(this));
@@ -88,7 +92,6 @@ HexagonGrid.prototype.redraw = function() {
 
     // Draw hexes using the model
     var available_paths = this.paths[this.drive_level.toString()];
-    var offsetColumn = false;
     for (var x = 0; x < this.max_x; x++) {
         for (var y = 0; y < this.max_y; y++) {
             var coordtext = x.toString().lpad("0", 2) + y.toString().lpad("0", 2);
@@ -110,7 +113,6 @@ HexagonGrid.prototype.redraw = function() {
                     // Is current reachable from head?
                     } else if (available_paths[path_head_name][name] !== null) {
                         // Is current in the path?
-                        // This is a sub condition so that the path doesn't have to be cleared when user changes through drive levels
                         var path_index = this.path_model.indexOf(name);
                         if (path_index !== -1) {
                             color = "#E3F3FB";
@@ -124,29 +126,72 @@ HexagonGrid.prototype.redraw = function() {
                     color = "#CCE7F4";
                 }
             }
-            // TODO different colours for:
-            // - nodes in path (including start and end)
-            // - maybe special color for start of path
-            // - reachable nodes from the head of the path ==> change text to non-bold instead?
 
-            var currentHexX;
-            var currentHexY;
-            if (offsetColumn) {
-                currentHexX = x * this.side + this.canvasOriginX;
-                currentHexY = (y * this.height) + this.canvasOriginY + (this.height * 0.5);
-            } else {
-                currentHexX = (x * this.side) + this.canvasOriginX;
-                currentHexY = (y * this.height) + this.canvasOriginY;
-            }
+            viewCoords = this.toViewCoords(x, y);
 
-            this.drawHex(currentHexX, currentHexY, color, name, coordtext);
+            this.drawHex(viewCoords.x, viewCoords.y, color, name, coordtext);
         }
-        offsetColumn = !offsetColumn;
     }
-    // TODO draw arrows between path nodes https://stackoverflow.com/questions/808826/draw-arrow-on-canvas-tag
+
+    // Pre-process parts of the path into an array of A->B
+    var path_from_to = [];
+    var prev_node = null;
+    for (node of path) {
+        if (prev_node !== null) {
+            path_from_to.push({from: prev_node, to: node});
+        }
+        prev_node = node;
+    }
+
+    // Draw arrows using the model and pre-processed array
+    this.context.lineWidth = 2.0;
+    this.context.lineCap = "round";
+    this.context.strokeStyle = "#BBC1EE";
+    this.context.beginPath();
+    for (part of path_from_to) {
+        fromC = this.system_coords[part.from];
+        toC = this.system_coords[part.to];
+
+        fromV = this.toViewCoords(fromC.x, fromC.y);
+        toV = this.toViewCoords(toC.x, toC.y);
+
+        this.drawArrow(fromV.x, fromV.y, toV.x, toV.y, 10); // TODO scale head size against this.width
+    }
+    this.context.closePath();
+    this.context.stroke();
 };
 
+HexagonGrid.prototype.toViewCoords = function(x, y) {
+    // Row is offset when:
+    // - x is even if odd columns are high
+    // - x is odd if even columns are high
+    var offsetColumn = ((x % 2) == 0) && !this.oddColsHigh;
+
+    var viewX = (x * this.side) + this.canvasOriginX;
+    var viewY = (y * this.height) + this.canvasOriginY;
+    if (offsetColumn) {
+        currentHexY + this.height * 0.5;
+    }
+
+    return {x: viewX, y: viewY};
+}
+
+// http://stackoverflow.com/a/6333775
+HexagonGrid.prototype.drawArrow = function(fromx, fromy, tox, toy, headlen) {
+    var dx = tox-fromx;
+    var dy = toy-fromy;
+    var angle = Math.atan2(dy,dx);
+    this.context.moveTo(fromx, fromy);
+    this.context.lineTo(tox, toy);
+    this.context.moveTo(tox, toy);
+    this.context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+    this.context.moveTo(tox, toy);
+    this.context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+}
+
 HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
+    this.context.lineWidth = 1.0;
+    this.context.lineCap = "butt";
     this.context.strokeStyle = "#000";
     this.context.beginPath();
     this.context.moveTo(x0 + this.width - this.side, y0);
