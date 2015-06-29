@@ -148,8 +148,9 @@ HexagonGrid.prototype.redraw = function() {
     // TODO need to display cost per jump, can look up one-hop segment cost in available_paths as well
 
     // Draw arrows using the model and pre-processed array
-    this.context.lineWidth = (0.06 * this.width);
+    this.context.lineWidth = (0.10 * this.width);
     this.context.lineCap = "round";
+    // TODO cycle color for each group of jump nodes (User says A->B->C, A->B needs two jumps, those are one colour. B->C needs more jumps, those are a different color)
     this.context.strokeStyle = "rgba(61, 147, 99, 0.75)";
     this.context.beginPath();
     for (part of path_from_to) {
@@ -164,7 +165,7 @@ HexagonGrid.prototype.redraw = function() {
             fromV.y + (this.height / 2),
             toV.x + (this.width / 2),
             toV.y + (this.height / 2),
-            (0.19 * this.width)
+            (0.22 * this.width)
         );
     }
     this.context.closePath();
