@@ -109,13 +109,13 @@ HexagonGrid.prototype.readHash = function() {
                     }
                 }
                 // Read path
-                var available_paths = this.paths[this.drive_level.toString()];
+                var availablePaths = this.getAvailablePaths();
                 var path_candidate = h.substring(sepIndex + 1);
                 if (path_candidate.length > 0) {
                     var path = path_candidate.split(",");
                     var pathOk = true;
                     for (var name of path) {
-                        if (!(name in this.system_coords) || available_paths[path[0]][name] === null) {
+                        if (!(name in this.system_coords) || availablePaths[path[0]][name] === null) {
                             pathOk = false;
                             break;
                         }
@@ -127,6 +127,10 @@ HexagonGrid.prototype.readHash = function() {
             }
         }
     }
+}
+
+HexagonGrid.prototype.getAvailablePaths = function() {
+    return this.paths[this.drive_level.toString()];
 }
 
 HexagonGrid.prototype.writeHash = function() {
@@ -156,7 +160,7 @@ HexagonGrid.prototype.redraw = function() {
     this.side = (3 / 2) * radius;
 
     // Draw hexes using the model
-    var available_paths = this.paths[this.drive_level.toString()];
+    var availablePaths = this.getAvailablePaths();
     for (var x = 0; x < this.max_x; x++) {
         for (var y = 0; y < this.max_y; y++) {
             var coordtext = x.toString().lpad("0", 2) + y.toString().lpad("0", 2);
@@ -176,7 +180,7 @@ HexagonGrid.prototype.redraw = function() {
                     if (name === path_head_name) {
                         color = "#5BC1F2";
                     // Is current reachable from head?
-                    } else if (available_paths[path_head_name][name] !== null) {
+                    } else if (availablePaths[path_head_name][name] !== null) {
                         // Is current in the path?
                         var path_index = this.path_model.indexOf(name);
                         if (path_index !== -1) {
@@ -207,10 +211,10 @@ HexagonGrid.prototype.redraw = function() {
         }
         prev_node = node;
     }
-    // Split into subparts (actual jumps) using node list in available_paths
+    // Split into subparts (actual jumps) using node list in availablePaths
     for (var i = 0; i < pathParts.length; i++) {
         var subParts = [];
-        var jumpNodes = available_paths[pathParts[i].from][pathParts[i].to][0]
+        var jumpNodes = availablePaths[pathParts[i].from][pathParts[i].to][0]
 
         prev_node = null;
         for (node of jumpNodes) {
@@ -224,8 +228,8 @@ HexagonGrid.prototype.redraw = function() {
     }
 
     // TODO need to display total cost ==> at destination hex (in the top-left of the hex, could display a total for every hex in the path that way)?
-    // TODO need to break path A->B nodes into the jump nodes given by lookup in available_paths (paths.json)
-    // TODO need to display cost per jump, can look up one-hop segment cost in available_paths as well ==> display in top-right of hex?
+    // TODO need to break path A->B nodes into the jump nodes given by lookup in availablePaths (paths.json)
+    // TODO need to display cost per jump, can look up one-hop segment cost in availablePaths as well ==> display in top-right of hex?
 
     // Draw arrows using the model and pre-processed array
     this.context.lineWidth = (0.10 * this.width);
@@ -444,11 +448,15 @@ HexagonGrid.prototype.clickEvent = function (e) {
         if (tile.x >= 0 && tile.y >= 0 && tile.x < this.max_x && tile.y < this.max_y) {
             var hex = this.offset_model[tile.x][tile.y];
             if (hex !== null) {
+                var availablePaths = this.getAvailablePaths();
                 var name = hex["name"];
-                // TODO add to path only if no existing nodes in the path or if this node is reachable from the path head
+                // Add to path only if no existing nodes in the path or if this node is reachable from the path head
                 var path_index = this.path_model.indexOf(name);
                 if (path_index === -1) {
-                    this.path_model.push(name);
+                    if (this.path_model.length === 0 || availablePaths[this.path_model[0]][name] !== null) {
+                        this.path_model.push(name);
+                    }
+                // Always allow removal of a node in the path
                 } else {
                     this.path_model.splice(path_index, 1);
                 }
