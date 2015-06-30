@@ -102,6 +102,7 @@ def pathfind(graph, start, end, heuristic):
     while current in came_from:
         path.append(current)
         current = came_from[current]
+    path.append(start)
 
     return list(reversed(path))
 
