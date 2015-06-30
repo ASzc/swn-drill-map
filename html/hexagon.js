@@ -1,4 +1,5 @@
 // Hex math defined here: http://blog.ruslans.com/2011/02/hexagonal-grid-math.html
+// Colour scheme: http://paletton.com/#uid=53s0u0kaVz84jP27qHbeJtFiHpX
 
 //
 // Utility
@@ -151,9 +152,18 @@ HexagonGrid.prototype.redraw = function() {
     this.context.lineWidth = (0.10 * this.width);
     this.context.lineCap = "round";
     // TODO cycle color for each group of jump nodes (User says A->B->C, A->B needs two jumps, those are one colour. B->C needs more jumps, those are a different color)
-    this.context.strokeStyle = "rgba(61, 147, 99, 0.75)";
-    this.context.beginPath();
+    var strokeStyles = [
+        "rgba(61, 147, 99, 0.75)",
+        "rgba(70, 79, 142, 0.75)",
+        "rgba(91, 169, 125, 0.75)",
+        "rgba(98, 105, 163, 0.75)",
+        "rgba(125, 189, 153, 0.75)",
+        "rgba(129, 135, 183, 0.75)"
+    ]
+    var strokeStyleIndex = 0;
     for (part of path_from_to) {
+        this.context.strokeStyle = strokeStyles[strokeStyleIndex];
+
         fromC = this.system_coords[part.from];
         toC = this.system_coords[part.to];
 
@@ -167,9 +177,9 @@ HexagonGrid.prototype.redraw = function() {
             toV.y + (this.height / 2),
             (0.22 * this.width)
         );
+
+        strokeStyleIndex = (strokeStyleIndex + 1) % strokeStyles.length;
     }
-    this.context.closePath();
-    this.context.stroke();
 };
 
 HexagonGrid.prototype.toViewCoords = function(x, y) {
@@ -190,15 +200,23 @@ HexagonGrid.prototype.toViewCoords = function(x, y) {
 
 // http://stackoverflow.com/a/6333775
 HexagonGrid.prototype.drawArrow = function(fromx, fromy, tox, toy, headlen) {
-    var dx = tox-fromx;
-    var dy = toy-fromy;
-    var angle = Math.atan2(dy,dx);
+    this.context.beginPath();
+
+    var dx = tox - fromx;
+    var dy = toy - fromy;
+    var angle = Math.atan2(dy, dx);
     this.context.moveTo(fromx, fromy);
     this.context.lineTo(tox, toy);
     this.context.moveTo(tox, toy);
-    this.context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+    this.context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6),
+                        toy - headlen * Math.sin(angle - Math.PI / 6));
     this.context.moveTo(tox, toy);
-    this.context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+    this.context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6),
+                        toy - headlen * Math.sin(angle + Math.PI / 6));
+    this.context.moveTo(tox, toy);
+
+    this.context.closePath();
+    this.context.stroke();
 }
 
 HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
