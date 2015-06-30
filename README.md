@@ -59,6 +59,8 @@ When a path is plotted (more than one system in the path), coloured arrows will 
 
 Drive level and the current path are stored in the fragment portion of the page URL, so you can send the current display to a someone else, or bookmark it.
 
+This also means that the back and forward functionality of most browsers functions as undo and redo.
+
 ##### Demonstration
 
 - Spike Drive Level 1: [Vahdat to Eneka](TODO/asgard_sigma/map.html#1;Vahdat,Eneka)
