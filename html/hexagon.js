@@ -90,6 +90,13 @@ HexagonGrid.prototype.keyEvent = function(e) {
         this.path_model = [];
         this.writeHash();
         this.redraw();
+    } else {
+        var number = parseInt(keyChar, 10);
+        if (number >= 1 && number <= 6) {
+            this.drive_level = number;
+            this.writeHash();
+            this.redraw();
+        }
     }
 }
 
