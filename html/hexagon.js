@@ -174,13 +174,13 @@ HexagonGrid.prototype.redraw = function() {
 
                     // Is current the head?
                     if (name === path_head_name) {
-                        color = "#7398AA";
+                        color = "#5BC1F2";
                     // Is current reachable from head?
                     } else if (available_paths[path_head_name][name] !== null) {
                         // Is current in the path?
                         var path_index = this.path_model.indexOf(name);
                         if (path_index !== -1) {
-                            color = "#7398AA";
+                            color = "#5BC1F2";
                         } else {
                             color = "#CCE7F4";
                         }
