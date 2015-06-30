@@ -70,7 +70,55 @@ function HexagonGrid(canvasId, systems, paths) {
 
     // Events
     this.canvas.addEventListener("click", this.clickEvent.bind(this));
+    window.addEventListener("hashchange", this.hashEvent.bind(this));
+    this.lastSetHash == "";
+    this.readHash();
 };
+
+HexagonGrid.prototype.hashEvent(e) {
+    this.readHash();
+    this.writeHash();
+    this.redraw();
+}
+
+HexagonGrid.prototype.readHash() {
+    // Avoid reparsing a hash that was just written by writeHash()
+    var h = location.hash;
+    if (this.lastSetHash !== h) {
+        // Read level
+        if (h.indexOf("#") === 0) {
+            var sepIndex = h.indexOf(";");
+            if (sepIndex !== -1) {
+                var level_candidate = h.substring(0, sepIndex);
+                if (level_candidate.length > 0) {
+                    var level = parseInt(level_candidate, 10);
+                    if (level.toString() in this.paths) {
+                        this.drive_level = level;
+                    }
+                }
+                // Read path
+                var path_candidate = h.substring(sepIndex + 1);
+                if (path_candidate.length > 0) {
+                    var path = path_candidate.split(",");
+                    var allExist = true;
+                    for (name of path) {
+                        if (name in this.system_coords) {
+                            allExist = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+HexagonGrid.prototype.writeHash() {
+    var newHash = "#" + this.drive_level + ";" + this.path.join(",");
+
+    this.lastSetHash = newHash;
+    location.hash = newHash;
+}
 
 //HexagonGrid.prototype.drawHexGrid = function (rows, cols, originX, originY, isDebug) {
 HexagonGrid.prototype.redraw = function() {
