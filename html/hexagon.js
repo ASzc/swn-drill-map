@@ -55,7 +55,7 @@ function HexagonGrid(canvasId, systems, paths) {
     }
 
     // Create model of path
-    this.drive_level = 1; // TODO need to be able to change this through UI
+    this.drive_level = 1;
     this.paths = paths;
     this.path_model = [];
 
