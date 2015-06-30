@@ -307,7 +307,6 @@ HexagonGrid.prototype.redraw = function() {
     }
 
     // TODO need to display total cost ==> at destination hex (in the top-left of the hex, could display a total for every hex in the path that way)?
-    // TODO need to break path A->B nodes into the jump nodes given by lookup in availablePaths (paths.json)
     // TODO need to display cost per jump, can look up one-hop segment cost in availablePaths as well ==> display in top-right of hex?
 
     // Draw arrows using the model and pre-processed array
@@ -451,7 +450,7 @@ HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
     if (mouseX > (column * this.side) && mouseX < (column * this.side) + this.width - this.side) {
 
 
-        //Now test which of the two triangles we are in 
+        //Now test which of the two triangles we are in
         //Top left triangle points
         var p1 = new Object();
         p1.x = column * this.side;
