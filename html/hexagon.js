@@ -134,19 +134,41 @@ HexagonGrid.prototype.redraw = function() {
         }
     }
 
+    // TODO load/store path and level in the fragment/"hash" portion of the url
+    // TODO to avoid event infinite loop, generate new hash and check if it is the same before setting the hash
+    // https://developer.mozilla.org/en-US/docs/Web/Events/hashchange
+    // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onhashchange
+    // https://developer.mozilla.org/en-US/docs/Web/API/Window/location
+    // https://developer.mozilla.org/en-US/docs/Web/API/URLUtils/hash
+
     // Pre-process parts of the path into an array of A->B
-    var path_from_to = [];
+    var pathParts = [];
     var prev_node = null;
     for (node of this.path_model) {
         if (prev_node !== null) {
-            path_from_to.push({from: prev_node, to: node});
+            pathParts.push({from: prev_node, to: node});
         }
         prev_node = node;
     }
+    // Split into subparts (actual jumps) using node list in available_paths
+    for (var i = 0; i < pathParts.length; i++) {
+        var subParts = [];
+        var jumpNodes = available_paths[pathParts[i].from][pathParts[i].to][0]
 
-    // TODO need to display total cost
+        prev_node = null;
+        for (node of jumpNodes) {
+            if (prev_node !== null) {
+                subParts.push({from: prev_node, to: node});
+            }
+            prev_node = node;
+        }
+
+        pathParts[i] = subParts;
+    }
+
+    // TODO need to display total cost ==> at destination hex (in the top-left of the hex, could display a total for every hex in the path that way)?
     // TODO need to break path A->B nodes into the jump nodes given by lookup in available_paths (paths.json)
-    // TODO need to display cost per jump, can look up one-hop segment cost in available_paths as well
+    // TODO need to display cost per jump, can look up one-hop segment cost in available_paths as well ==> display in top-right of hex?
 
     // Draw arrows using the model and pre-processed array
     this.context.lineWidth = (0.10 * this.width);
@@ -161,22 +183,24 @@ HexagonGrid.prototype.redraw = function() {
         "rgba(129, 135, 183, 0.75)"
     ]
     var strokeStyleIndex = 0;
-    for (part of path_from_to) {
+    for (part of pathParts) {
         this.context.strokeStyle = strokeStyles[strokeStyleIndex];
 
-        fromC = this.system_coords[part.from];
-        toC = this.system_coords[part.to];
+        for (subpart of part) {
+            var fromC = this.system_coords[subpart.from];
+            var toC = this.system_coords[subpart.to];
 
-        fromV = this.toViewCoords(fromC.x, fromC.y);
-        toV = this.toViewCoords(toC.x, toC.y);
+            var fromV = this.toViewCoords(fromC.x, fromC.y);
+            var toV = this.toViewCoords(toC.x, toC.y);
 
-        this.drawArrow(
-            fromV.x + (this.width / 2),
-            fromV.y + (this.height / 2),
-            toV.x + (this.width / 2),
-            toV.y + (this.height / 2),
-            (0.22 * this.width)
-        );
+            this.drawArrow(
+                fromV.x + (this.width / 2),
+                fromV.y + (this.height / 2),
+                toV.x + (this.width / 2),
+                toV.y + (this.height / 2),
+                (0.22 * this.width)
+            );
+        }
 
         strokeStyleIndex = (strokeStyleIndex + 1) % strokeStyles.length;
     }
