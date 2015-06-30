@@ -70,6 +70,7 @@ function HexagonGrid(canvasId, systems, paths) {
 
     // Events
     this.canvas.addEventListener("click", this.clickEvent.bind(this));
+    window.addEventListener("keyup", this.keyEvent.bind(this));
     window.addEventListener("hashchange", this.hashEvent.bind(this));
     this.lastSetHash == "";
     this.readHash();
@@ -80,6 +81,16 @@ HexagonGrid.prototype.hashEvent = function(e) {
     this.readHash();
     this.writeHash();
     this.redraw();
+}
+
+HexagonGrid.prototype.keyEvent = function(e) {
+    var key = e.keyCode || e.which;
+    var keyChar = String.fromCharCode(key);
+    if (keyChar === "c" || keyChar === "C") {
+        this.path_model = [];
+        this.writeHash();
+        this.redraw();
+    }
 }
 
 HexagonGrid.prototype.readHash = function() {
@@ -163,13 +174,13 @@ HexagonGrid.prototype.redraw = function() {
 
                     // Is current the head?
                     if (name === path_head_name) {
-                        color = "#E3F3FB";
+                        color = "#7398AA";
                     // Is current reachable from head?
                     } else if (available_paths[path_head_name][name] !== null) {
                         // Is current in the path?
                         var path_index = this.path_model.indexOf(name);
                         if (path_index !== -1) {
-                            color = "#E3F3FB";
+                            color = "#7398AA";
                         } else {
                             color = "#CCE7F4";
                         }
@@ -219,14 +230,13 @@ HexagonGrid.prototype.redraw = function() {
     // Draw arrows using the model and pre-processed array
     this.context.lineWidth = (0.10 * this.width);
     this.context.lineCap = "round";
-    // TODO cycle color for each group of jump nodes (User says A->B->C, A->B needs two jumps, those are one colour. B->C needs more jumps, those are a different color)
     var strokeStyles = [
         "rgba(61, 147, 99, 0.75)",
         "rgba(70, 79, 142, 0.75)",
-        "rgba(91, 169, 125, 0.75)",
-        "rgba(98, 105, 163, 0.75)",
+        "rgba(207, 151, 86, 0.75)",
         "rgba(125, 189, 153, 0.75)",
-        "rgba(129, 135, 183, 0.75)"
+        "rgba(129, 135, 183, 0.75)",
+        "rgba(255, 215, 168, 0.75)"
     ]
     var strokeStyleIndex = 0;
     for (part of pathParts) {
