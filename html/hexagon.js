@@ -73,15 +73,16 @@ function HexagonGrid(canvasId, systems, paths) {
     window.addEventListener("hashchange", this.hashEvent.bind(this));
     this.lastSetHash == "";
     this.readHash();
+    this.writeHash();
 };
 
-HexagonGrid.prototype.hashEvent(e) {
+HexagonGrid.prototype.hashEvent = function(e) {
     this.readHash();
     this.writeHash();
     this.redraw();
 }
 
-HexagonGrid.prototype.readHash() {
+HexagonGrid.prototype.readHash = function() {
     // Avoid reparsing a hash that was just written by writeHash()
     var h = location.hash;
     if (this.lastSetHash !== h) {
@@ -89,7 +90,7 @@ HexagonGrid.prototype.readHash() {
         if (h.indexOf("#") === 0) {
             var sepIndex = h.indexOf(";");
             if (sepIndex !== -1) {
-                var level_candidate = h.substring(0, sepIndex);
+                var level_candidate = h.substring(1, sepIndex);
                 if (level_candidate.length > 0) {
                     var level = parseInt(level_candidate, 10);
                     if (level.toString() in this.paths) {
@@ -97,15 +98,19 @@ HexagonGrid.prototype.readHash() {
                     }
                 }
                 // Read path
+                var available_paths = this.paths[this.drive_level.toString()];
                 var path_candidate = h.substring(sepIndex + 1);
                 if (path_candidate.length > 0) {
                     var path = path_candidate.split(",");
-                    var allExist = true;
-                    for (name of path) {
-                        if (name in this.system_coords) {
-                            allExist = false;
+                    var pathOk = true;
+                    for (var name of path) {
+                        if (!(name in this.system_coords) || available_paths[path[0]][name] === null) {
+                            pathOk = false;
                             break;
                         }
+                    }
+                    if (pathOk) {
+                        this.path_model = path;
                     }
                 }
             }
@@ -113,8 +118,8 @@ HexagonGrid.prototype.readHash() {
     }
 }
 
-HexagonGrid.prototype.writeHash() {
-    var newHash = "#" + this.drive_level + ";" + this.path.join(",");
+HexagonGrid.prototype.writeHash = function() {
+    var newHash = "#" + this.drive_level + ";" + this.path_model.join(",");
 
     this.lastSetHash = newHash;
     location.hash = newHash;
@@ -181,13 +186,6 @@ HexagonGrid.prototype.redraw = function() {
             this.drawHex(viewCoords.x, viewCoords.y, color, name, coordtext);
         }
     }
-
-    // TODO load/store path and level in the fragment/"hash" portion of the url
-    // TODO to avoid event infinite loop, generate new hash and check if it is the same before setting the hash
-    // https://developer.mozilla.org/en-US/docs/Web/Events/hashchange
-    // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onhashchange
-    // https://developer.mozilla.org/en-US/docs/Web/API/Window/location
-    // https://developer.mozilla.org/en-US/docs/Web/API/URLUtils/hash
 
     // Pre-process parts of the path into an array of A->B
     var pathParts = [];
@@ -444,6 +442,7 @@ HexagonGrid.prototype.clickEvent = function (e) {
                 } else {
                     this.path_model.splice(path_index, 1);
                 }
+                this.writeHash();
                 this.redraw();
             }
         }
