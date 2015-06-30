@@ -1,5 +1,29 @@
-// Hex math defined here: http://blog.ruslans.com/2011/02/hexagonal-grid-math.html
-// Colour scheme: http://paletton.com/#uid=53s0u0kaVz84jP27qHbeJtFiHpX
+/*
+ * This file was derived from Hexagon.js by Robert Anton Reese.
+ * The original Copyright statement follows:
+ *
+ * The MIT License
+ *
+ * Copyright (c) 2012-2013 Robert Anton Reese
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 //
 // Utility
@@ -13,7 +37,7 @@ String.prototype.lpad = function(padString, length) {
 }
 
 //
-// Hexagon Grid
+// Init
 //
 
 function HexagonGrid(canvasId, systems, paths) {
@@ -77,6 +101,18 @@ function HexagonGrid(canvasId, systems, paths) {
     this.writeHash();
 };
 
+//
+// Common
+//
+
+HexagonGrid.prototype.getAvailablePaths = function() {
+    return this.paths[this.drive_level.toString()];
+}
+
+//
+// Event Handlers
+//
+
 HexagonGrid.prototype.hashEvent = function(e) {
     this.readHash();
     this.writeHash();
@@ -99,6 +135,41 @@ HexagonGrid.prototype.keyEvent = function(e) {
         }
     }
 }
+
+HexagonGrid.prototype.clickEvent = function(e) {
+    if (e.button === 0) {
+        var mouseX = e.pageX;
+        var mouseY = e.pageY;
+
+        var localX = mouseX - this.canvasOriginX;
+        var localY = mouseY - this.canvasOriginY;
+
+        var tile = this.getSelectedTile(localX, localY);
+        if (tile.x >= 0 && tile.y >= 0 && tile.x < this.max_x && tile.y < this.max_y) {
+            var hex = this.offset_model[tile.x][tile.y];
+            if (hex !== null) {
+                var availablePaths = this.getAvailablePaths();
+                var name = hex["name"];
+                // Add to path only if no existing nodes in the path or if this node is reachable from the path head
+                var path_index = this.path_model.indexOf(name);
+                if (path_index === -1) {
+                    if (this.path_model.length === 0 || availablePaths[this.path_model[0]][name] !== null) {
+                        this.path_model.push(name);
+                    }
+                // Always allow removal of a node in the path
+                } else {
+                    this.path_model.splice(path_index, 1);
+                }
+                this.writeHash();
+                this.redraw();
+            }
+        }
+    }
+}
+
+//
+// URL Fragment / Location Hash
+//
 
 HexagonGrid.prototype.readHash = function() {
     // Avoid reparsing a hash that was just written by writeHash()
@@ -136,10 +207,6 @@ HexagonGrid.prototype.readHash = function() {
     }
 }
 
-HexagonGrid.prototype.getAvailablePaths = function() {
-    return this.paths[this.drive_level.toString()];
-}
-
 HexagonGrid.prototype.writeHash = function() {
     var newHash = "#" + this.drive_level + ";" + this.path_model.join(",");
 
@@ -147,7 +214,12 @@ HexagonGrid.prototype.writeHash = function() {
     location.hash = newHash;
 }
 
-//HexagonGrid.prototype.drawHexGrid = function (rows, cols, originX, originY, isDebug) {
+//
+// Canvas Drawing
+//
+
+// Colour scheme: http://paletton.com/#uid=53s0u0kaVz84jP27qHbeJtFiHpX
+
 HexagonGrid.prototype.redraw = function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -273,22 +345,6 @@ HexagonGrid.prototype.redraw = function() {
     }
 };
 
-HexagonGrid.prototype.toViewCoords = function(x, y) {
-    // Row is offset when:
-    // - x is even and odd columns are high
-    // - x is odd and even columns are high
-    var xIsEven = ((x + 1) % 2) === 0;
-    var offsetColumn = (xIsEven && this.oddColsHigh) || (!xIsEven && !this.oddColsHigh);
-
-    var viewX = (x * this.side) + this.canvasOriginX;
-    var viewY = (y * this.height) + this.canvasOriginY;
-    if (offsetColumn) {
-        viewY += this.height * 0.5;
-    }
-
-    return {x: viewX, y: viewY};
-}
-
 // http://stackoverflow.com/a/6333775
 HexagonGrid.prototype.drawArrow = function(fromx, fromy, tox, toy, headlen) {
     this.context.beginPath();
@@ -339,18 +395,38 @@ HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
         this.context.fillStyle = "#000";
         this.context.fillText(name, x0 + (this.width/2), y0 + (this.height / 2));
     }
-};
+}
+
+//
+// View and Hex Math
+//
+
+HexagonGrid.prototype.toViewCoords = function(x, y) {
+    // Row is offset when:
+    // - x is even and odd columns are high
+    // - x is odd and even columns are high
+    var xIsEven = ((x + 1) % 2) === 0;
+    var offsetColumn = (xIsEven && this.oddColsHigh) || (!xIsEven && !this.oddColsHigh);
+
+    var viewX = (x * this.side) + this.canvasOriginX;
+    var viewY = (y * this.height) + this.canvasOriginY;
+    if (offsetColumn) {
+        viewY += this.height * 0.5;
+    }
+
+    return {x: viewX, y: viewY};
+}
 
 //Recusivly step up to the body to calculate canvas offset.
 HexagonGrid.prototype.getRelativeCanvasOffset = function() {
-	var x = 0, y = 0;
-	var layoutElement = this.canvas;
+    var x = 0, y = 0;
+    var layoutElement = this.canvas;
     if (layoutElement.offsetParent) {
         do {
             x += layoutElement.offsetLeft;
             y += layoutElement.offsetTop;
         } while (layoutElement = layoutElement.offsetParent);
-        
+
         return { x: x, y: y };
     }
 }
@@ -359,7 +435,7 @@ HexagonGrid.prototype.getRelativeCanvasOffset = function() {
 //Left edge of grid has a test to acuratly determin correct hex
 HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
 
-	var offSet = this.getRelativeCanvasOffset();
+    var offSet = this.getRelativeCanvasOffset();
 
     mouseX -= offSet.x;
     mouseY -= offSet.y;
@@ -371,7 +447,7 @@ HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
             : Math.floor(((mouseY + (this.height * 0.5)) / this.height)) - 1);
 
 
-    //Test if on left side of frame            
+    //Test if on left side of frame
     if (mouseX > (column * this.side) && mouseX < (column * this.side) + this.width - this.side) {
 
 
@@ -425,14 +501,12 @@ HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
     }
 
     return  { y: row, x: column };
-};
-
+}
 
 HexagonGrid.prototype.sign = function(p1, p2, p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-};
+}
 
-//TODO: Replace with optimized barycentric coordinate method
 HexagonGrid.prototype.isPointInTriangle = function isPointInTriangle(pt, v1, v2, v3) {
     var b1, b2, b3;
 
@@ -441,35 +515,4 @@ HexagonGrid.prototype.isPointInTriangle = function isPointInTriangle(pt, v1, v2,
     b3 = this.sign(pt, v3, v1) < 0.0;
 
     return ((b1 == b2) && (b2 == b3));
-};
-
-HexagonGrid.prototype.clickEvent = function (e) {
-    if (e.button === 0) {
-        var mouseX = e.pageX;
-        var mouseY = e.pageY;
-
-        var localX = mouseX - this.canvasOriginX;
-        var localY = mouseY - this.canvasOriginY;
-
-        var tile = this.getSelectedTile(localX, localY);
-        if (tile.x >= 0 && tile.y >= 0 && tile.x < this.max_x && tile.y < this.max_y) {
-            var hex = this.offset_model[tile.x][tile.y];
-            if (hex !== null) {
-                var availablePaths = this.getAvailablePaths();
-                var name = hex["name"];
-                // Add to path only if no existing nodes in the path or if this node is reachable from the path head
-                var path_index = this.path_model.indexOf(name);
-                if (path_index === -1) {
-                    if (this.path_model.length === 0 || availablePaths[this.path_model[0]][name] !== null) {
-                        this.path_model.push(name);
-                    }
-                // Always allow removal of a node in the path
-                } else {
-                    this.path_model.splice(path_index, 1);
-                }
-                this.writeHash();
-                this.redraw();
-            }
-        }
-    }
-};
+}
