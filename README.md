@@ -59,6 +59,12 @@ When a path is plotted (more than one system in the path), coloured arrows will 
 
 Drive level and the current path are stored in the fragment portion of the page URL, so you can send the current display to a someone else, or bookmark it.
 
+##### Demonstration
+
+- Spike Drive Level 1: [Vahdat to Eneka](TODO/asgard_sigma/map.html#1;Vahdat,Eneka)
+- Spike Drive Level 2: [Franco to Gunnhild to Protagoras](TODO/asgard_sigma/map.html#2;Franco,Gunnhild,Protagoras)
+- Spike Drive Level 3: [Franco to Gunnhild to Protagoras](TODO/asgard_sigma/map.html#3;Franco,Gunnhild,Protagoras)
+
 #### Serialized data
 
 - `systems`:
