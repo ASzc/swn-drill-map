@@ -313,16 +313,28 @@ HexagonGrid.prototype.redraw = function() {
         "rgba(255, 215, 168, 0.75)"
     ]
     var strokeStyleIndex = 0;
+
+    var lastJumpCost = 0;
+    var totalCost = 0;
+    var visitedParts = {};
+
+    // Config for costs text
+    var textSize = 0.10 * this.width;
+    this.context.font = "normal bold " + textSize.toString() + "px sans";
+    this.context.fillStyle = "#000";
+
     for (part of pathParts) {
+        // Load arrow style
         this.context.strokeStyle = strokeStyles[strokeStyleIndex];
 
         for (subpart of part) {
+            // Determine the model and view coordinates of the hex
             var fromC = this.system_coords[subpart.from];
             var toC = this.system_coords[subpart.to];
-
             var fromV = this.toViewCoords(fromC.x, fromC.y);
             var toV = this.toViewCoords(toC.x, toC.y);
 
+            // Draw path arrow
             this.drawArrow(
                 fromV.x + (this.width / 2),
                 fromV.y + (this.height / 2),
@@ -330,8 +342,28 @@ HexagonGrid.prototype.redraw = function() {
                 toV.y + (this.height / 2),
                 (0.22 * this.width)
             );
+
+            // Process costs
+            lastJumpCost = availablePaths[subpart.from][subpart.to][1];
+            totalCost += lastJumpCost;
+
+            // Try to avoid overwriting cost text when paths loop back
+            var textOffset = 0;
+            if (subpart.to in visitedParts) {
+                textOffset = visitedParts[subpart.to] * textSize;
+                visitedParts[subpart.to] += 1;
+            } else {
+                visitedParts[subpart.to] = 1;
+            }
+
+            // Draw costs
+            this.context.textAlign = "right";
+            this.context.fillText(lastJumpCost, toV.x + (this.width / 2) + (this.width/4), toV.y + 10 + textOffset);
+            this.context.textAlign = "left";
+            this.context.fillText(totalCost, toV.x + (this.width / 2) - (this.width/4), toV.y + 10 + textOffset);
         }
 
+        // Select next arrow style, cycled at the number of styles
         strokeStyleIndex = (strokeStyleIndex + 1) % strokeStyles.length;
     }
 };
@@ -375,7 +407,7 @@ HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
     this.context.closePath();
     this.context.stroke();
 
-    this.context.textAlign = "start";
+    this.context.textAlign = "left";
     this.context.font = "normal normal " + (0.10 * this.width).toString() + "px sans";
     this.context.fillStyle = "#333";
     this.context.fillText(coordtext, x0 + (this.width / 2) - (this.width/4), y0 + (this.height - 5));
