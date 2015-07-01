@@ -292,12 +292,7 @@ def process(input, output_dir, template_dir, max_drive_level):
         write_reports(output_dir, systems, hex_distances, paths)
 
 def main():
-
-    # TODO probably better to use a table rather than a graph for distance info output? ==> Can't show the route with a table, but could have alternative output mode to show the minimum distance that needs to be travelled between two systems for a particular spike drive level.
-
-    # TODO is there any way to show all drive levels at once? ==> Color coding? Note: lower drive levels may not be able to get everywhere in the sector, higher drive levels may be able to take shorter paths
-
-    parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
+    parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship drill data.")
     parser.add_argument("-t", "--template-dir", default="template", help="Directory containing files for the output directory. Default: template")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
     parser.add_argument("-m", "--max-drive-level", default=6, help="Maximum spike drive level. Default: 6")

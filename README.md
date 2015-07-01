@@ -1,6 +1,6 @@
-# SWN Transit Map
+# SWN Drill Map
 
-Find ship transit data within a Stars Without Number sector.
+Generate ship drill data for a Stars Without Number sector.
 
 *Congratulations on purchasing your RSNav Mark I navigation computer from Richardson Scientific (Astronautics Division). We are confident that it will give you many drills of fine service. For installation and calibration please see page 9. For the user guide, please see page 2306.*
 
@@ -15,9 +15,9 @@ Find ship transit data within a Stars Without Number sector.
 
 ### Example
 
-This command will write the transit data (for the Asgard Sigma sector) into files within the directory `asgard_sigma`.
+This command will write the drill data (for the Asgard Sigma sector) into files within the directory `asgard_sigma`.
 
-    $ ./transit.py asgard_sigma.html
+    $ ./drill.py asgard_sigma.html
 
 ### Output files
 
@@ -45,7 +45,7 @@ Hexes without a star system have a white fill. Occupied hexes will always have a
 
 You may toggle reachable systems in and out of the path. Non-reachable systems cannot be added to the path.
 
-When a path is plotted (more than one system in the path), coloured arrows will be drawn between the path systems, split into individual jumps as required by the spike drive level. The plotted path is an optimally short path (smallest number of jumps) between each system; other equally optimal paths may be possible.
+When a path is plotted (more than one system in the path), coloured arrows will be drawn between the path systems, split into individual drills as required by the spike drive level. The plotted path is an optimally short path (smallest number of drills) between each system; other equally optimal paths may be possible.
 
 ##### Controls
 
