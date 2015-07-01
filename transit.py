@@ -7,6 +7,7 @@ import itertools
 import json
 import os
 import re
+import shutil
 import string
 import sys
 
@@ -261,23 +262,33 @@ def write_reports(output_dir, systems, hex_distances, paths):
     paths_file = os.path.join(output_dir, "paths")
     dump(paths, paths_file)
 
+def process_template(template_dir, output_dir):
+    system_name = string.capwords(os.path.basename(output_dir))
+    with open(os.path.join(template_dir, "map.html"), "r") as i:
+        text = i.read().replace("{system_name}", system_name)
+    with open(os.path.join(output_dir, "map.html"), "w") as o:
+        o.write(text)
+
+    shutil.copy(os.path.join(template_dir, "hexagon.js"), output_dir)
+
 #
 # Main
 #
 
-def process(input, output_dir, max_drive_level):
+def process(input, output_dir, template_dir, max_drive_level):
     # Open stream if required
     if input == "-":
-        process(sys.stdin, output_dir, max_drive_level)
+        process(sys.stdin, output_dir, template_dir, max_drive_level)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            process(i, output_dir, max_drive_level)
+            process(i, output_dir, template_dir, max_drive_level)
 
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
         hex_distances = cube_distances_complete(systems)
         paths = find_all_jump_paths(hex_distances, max_drive_level)
+        process_template(template_dir, output_dir)
         write_reports(output_dir, systems, hex_distances, paths)
 
 def main():
@@ -287,6 +298,7 @@ def main():
     # TODO is there any way to show all drive levels at once? ==> Color coding? Note: lower drive levels may not be able to get everywhere in the sector, higher drive levels may be able to take shorter paths
 
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
+    parser.add_argument("-t", "--template-dir", default="template", help="Directory containing files for the output directory. Default: template")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
     parser.add_argument("-m", "--max-drive-level", default=6, help="Maximum spike drive level. Default: 6")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
@@ -298,7 +310,7 @@ def main():
     else:
         output_dir = args.output_dir
 
-    process(args.input, output_dir, args.max_drive_level)
+    process(args.input, output_dir, args.template_dir, args.max_drive_level)
 
 if __name__ == "__main__":
     main()

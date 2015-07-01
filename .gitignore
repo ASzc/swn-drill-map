@@ -2,7 +2,7 @@
 *.pyc
 *.json
 *.yaml
-/*.html
-systems.js
-hex_distances.js
-paths.js
+*.html
+*.js
+!/template/*.js
+!/template/*.html
