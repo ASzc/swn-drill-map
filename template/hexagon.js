@@ -285,7 +285,12 @@ HexagonGrid.prototype.redraw = function() {
     // Split into subparts (actual jumps) using node list in availablePaths
     for (var i = 0; i < pathParts.length; i++) {
         var subParts = [];
-        var jumpNodes = availablePaths[pathParts[i].from][pathParts[i].to][0]
+        var jump = availablePaths[pathParts[i].from][pathParts[i].to];
+        // Don't draw path if route is invalid at current drive level
+        if (jump === null) {
+            return;
+        }
+        var jumpNodes = availablePaths[pathParts[i].from][pathParts[i].to][0];
 
         prev_node = null;
         for (node of jumpNodes) {
