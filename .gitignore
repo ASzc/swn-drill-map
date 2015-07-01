@@ -3,3 +3,6 @@
 *.json
 *.yaml
 /*.html
+systems.js
+hex_distances.js
+paths.js

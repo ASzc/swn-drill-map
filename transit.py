@@ -209,11 +209,23 @@ def read_tiddlywiki(input):
 # Write
 #
 
-def dump_json(obj, path, compact_json):
-    with open(path + ".json", "w") as f:
+def dump_js(obj, path, var_name):
+    with open(path + ".js", "w") as f:
+        f.write("var ")
+        f.write(var_name)
+        f.write(" = ")
+        dump_json(obj, f, True)
+        f.write(";")
+        f.write("\n")
+
+def dump_json(obj, output, compact_json):
+    if not hasattr(output, "write"):
+        with open(output + ".json", "w") as f:
+            dump_json(obj, f, compact_json)
+    else:
         json.dump(
             obj=obj,
-            fp=f,
+            fp=output,
             ensure_ascii=False,
             sort_keys=not compact_json,
             indent=None if compact_json else 4,
@@ -232,11 +244,12 @@ def dump_yaml(obj, path):
 #def dump_graphml():
 #    pass
 
-def write_reports(output_dir, compact_json, systems, hex_distances, paths):
+def write_reports(output_dir, systems, hex_distances, paths):
     os.makedirs(output_dir, exist_ok=True)
 
     def dump(obj, prefix):
-        dump_json(obj, prefix, compact_json)
+        dump_json(obj, prefix, False)
+        dump_js(obj, prefix, os.path.basename(prefix))
         dump_yaml(obj, prefix)
 
     systems_file = os.path.join(output_dir, "systems")
@@ -252,20 +265,20 @@ def write_reports(output_dir, compact_json, systems, hex_distances, paths):
 # Main
 #
 
-def process(input, output_dir, max_drive_level, compact_json):
+def process(input, output_dir, max_drive_level):
     # Open stream if required
     if input == "-":
-        process(sys.stdin, output_dir, max_drive_level, compact_json)
+        process(sys.stdin, output_dir, max_drive_level)
     elif isinstance(input, str):
         with open(input, "r") as i:
-            process(i, output_dir, max_drive_level, compact_json)
+            process(i, output_dir, max_drive_level)
 
     # Do actual processing
     else:
         systems = read_tiddlywiki(input)
         hex_distances = cube_distances_complete(systems)
         paths = find_all_jump_paths(hex_distances, max_drive_level)
-        write_reports(output_dir, compact_json, systems, hex_distances, paths)
+        write_reports(output_dir, systems, hex_distances, paths)
 
 def main():
 
@@ -276,7 +289,6 @@ def main():
     parser = argparse.ArgumentParser(description="Convert system data from a TiddlyWiki created by SWN Sector Generator into ship transit data.")
     parser.add_argument("-o", "--output-dir", help="Directory to write the output files into. Default: name portion of the input file")
     parser.add_argument("-m", "--max-drive-level", default=6, help="Maximum spike drive level. Default: 6")
-    parser.add_argument("-c", "--compact-json", action="store_true", help="Do not pretty-print the .json files.")
     parser.add_argument("input", help="TiddlyWiki html to read. Use - for stdin.")
 
     args = parser.parse_args()
@@ -286,7 +298,7 @@ def main():
     else:
         output_dir = args.output_dir
 
-    process(args.input, output_dir, args.max_drive_level, args.compact_json)
+    process(args.input, output_dir, args.max_drive_level)
 
 if __name__ == "__main__":
     main()
