@@ -224,18 +224,10 @@ HexagonGrid.prototype.redraw = function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Fit the hex size to the smallest of the canvas dimensions
-    var width_candidate = this.canvas.width / (this.max_x + 0.5);
     var height_candidate = this.canvas.height / (this.max_y + 0.5);
-    var radius;
-    if (width_candidate <= height_candidate) {
-        radius = width_candidate / 2;
-        this.width = width_candidate;
-        this.height = Math.sqrt(3) * radius;
-    } else {
-        radius = height_candidate / Math.sqrt(3);
-        this.width = 2 * radius;
-        this.height = height_candidate;
-    }
+    radius = height_candidate / Math.sqrt(3);
+    this.width = 2 * radius;
+    this.height = height_candidate;
     this.side = (3 / 2) * radius;
 
     // Draw hexes using the model

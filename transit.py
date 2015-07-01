@@ -263,7 +263,7 @@ def write_reports(output_dir, systems, hex_distances, paths):
     dump(paths, paths_file)
 
 def process_template(template_dir, output_dir):
-    system_name = string.capwords(os.path.basename(output_dir))
+    system_name = string.capwords(os.path.basename(output_dir), "_").replace("_", " ")
     with open(os.path.join(template_dir, "map.html"), "r") as i:
         text = i.read().replace("{system_name}", system_name)
     with open(os.path.join(output_dir, "map.html"), "w") as o:
