@@ -302,6 +302,7 @@ HexagonGrid.prototype.redraw = function() {
     // TODO need to display cost per jump, can look up one-hop segment cost in availablePaths as well ==> display in top-right of hex?
 
     // Draw arrows using the model and pre-processed array
+    var arrowHeadLen = 0.22 * this.width;
     this.context.lineWidth = (0.10 * this.width);
     this.context.lineCap = "round";
     var strokeStyles = [
@@ -336,11 +337,11 @@ HexagonGrid.prototype.redraw = function() {
 
             // Draw path arrow
             this.drawArrow(
-                fromV.x + (this.width / 2),
-                fromV.y + (this.height / 2),
-                toV.x + (this.width / 2),
-                toV.y + (this.height / 2),
-                (0.22 * this.width)
+                this.hexXLoc(fromV.x, "center"),
+                this.hexYLoc(fromV.y, "center"),
+                this.hexXLoc(toV.x, "center"),
+                this.hexYLoc(toV.y, "center"),
+                arrowHeadLen
             );
 
             // Process costs
@@ -358,9 +359,9 @@ HexagonGrid.prototype.redraw = function() {
 
             // Draw costs
             this.context.textAlign = "right";
-            this.context.fillText(lastJumpCost, toV.x + (this.width / 2) + (this.width/4), toV.y + 10 + textOffset);
+            this.context.fillText(lastJumpCost, this.hexXLoc(toV.x, "right"), this.hexYLoc(toV.y, "top") + textOffset);
             this.context.textAlign = "left";
-            this.context.fillText(totalCost, toV.x + (this.width / 2) - (this.width/4), toV.y + 10 + textOffset);
+            this.context.fillText(totalCost, this.hexXLoc(toV.x, "left"), this.hexYLoc(toV.y, "top") + textOffset);
         }
 
         // Select next arrow style, cycled at the number of styles
@@ -410,13 +411,13 @@ HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, name, coordtext) {
     this.context.textAlign = "left";
     this.context.font = "normal normal " + (0.10 * this.width).toString() + "px sans";
     this.context.fillStyle = "#333";
-    this.context.fillText(coordtext, x0 + (this.width / 2) - (this.width/4), y0 + (this.height - 5));
+    this.context.fillText(coordtext, this.hexXLoc(x0, "left"), this.hexYLoc(y0, "bottom"));
 
     if (name !== null) {
         this.context.textAlign = "center";
         this.context.font = "normal bold " + (0.11 * this.width).toString() + "px sans";
         this.context.fillStyle = "#000";
-        this.context.fillText(name, x0 + (this.width/2), y0 + (this.height / 2));
+        this.context.fillText(name, this.hexXLoc(x0, "center"), this.hexYLoc(y0, "center"));
     }
 }
 
@@ -438,6 +439,30 @@ HexagonGrid.prototype.toViewCoords = function(x, y) {
     }
 
     return {x: viewX, y: viewY};
+}
+
+HexagonGrid.prototype.hexXLoc = function(hexViewX, locationName) {
+    if (locationName === "left") {
+        return hexViewX + (this.width / 2) - (this.width / 4);
+    } else if (locationName === "right") {
+        return hexViewX + (this.width / 2) + (this.width / 4);
+    } else if (locationName === "center") {
+        return hexViewX + (this.width / 2);
+    } else {
+        return hexViewX;
+    }
+}
+
+HexagonGrid.prototype.hexYLoc = function(hexViewY, locationName) {
+    if (locationName === "top") {
+        return hexViewY + (0.12 * this.height);
+    } else if (locationName === "bottom") {
+        return hexViewY + (this.height - (0.05 * this.height));
+    } else if (locationName === "center") {
+        return hexViewY + (this.height / 2);
+    } else {
+        return hexViewY;
+    }
 }
 
 //Recusivly step up to the body to calculate canvas offset.
