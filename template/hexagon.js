@@ -303,9 +303,6 @@ HexagonGrid.prototype.redraw = function() {
         pathParts[i] = subParts;
     }
 
-    // TODO need to display total cost ==> at destination hex (in the top-left of the hex, could display a total for every hex in the path that way)?
-    // TODO need to display cost per jump, can look up one-hop segment cost in availablePaths as well ==> display in top-right of hex?
-
     // Draw arrows using the model and pre-processed array
     var arrowHeadLen = 0.22 * this.width;
     this.context.lineWidth = (0.10 * this.width);
