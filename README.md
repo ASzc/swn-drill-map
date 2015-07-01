@@ -63,9 +63,9 @@ This also means that the back and forward functionality of most browsers functio
 
 ##### Demonstration
 
-- Spike Drive Level 1: [Vahdat to Eneka](TODO/asgard_sigma/map.html#1;Vahdat,Eneka)
-- Spike Drive Level 2: [Franco to Gunnhild to Protagoras](TODO/asgard_sigma/map.html#2;Franco,Gunnhild,Protagoras)
-- Spike Drive Level 3: [Franco to Gunnhild to Protagoras](TODO/asgard_sigma/map.html#3;Franco,Gunnhild,Protagoras)
+- Spike Drive Level 1: [Vahdat to Eneka](https://aszc.github.io/swn-drill-map/asgard_sigma/map.html#1;Vahdat,Eneka)
+- Spike Drive Level 2: [Franco to Gunnhild to Protagoras](https://aszc.github.io/swn-drill-map/asgard_sigma/map.html#2;Franco,Gunnhild,Protagoras)
+- Spike Drive Level 3: [Franco to Gunnhild to Protagoras](https://aszc.github.io/swn-drill-map/asgard_sigma/map.html#3;Franco,Gunnhild,Protagoras)
 
 #### Serialized data
 
