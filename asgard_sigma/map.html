@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <title>Asgard Sigma Map</title>
+    <script src="hexagon.js"></script>
+    <script src="systems.js"></script>
+    <script src="paths.js"></script>
+    <style type="text/css">
+        div#container {
+            height: 100%;
+            width: 100%;
+        }
+        html, body {
+            height: 99%;
+            width: 99%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="HexCanvas"></canvas>
+    </div>
+    <script>
+        var resizeCanvas = function() {
+            var canvasNode = document.getElementById("HexCanvas");
+            var div = document.getElementById("container");
+            canvasNode.width = div.clientWidth;
+            canvasNode.height = div.clientHeight;
+        }
+
+        var hexagonGrid = new HexagonGrid("HexCanvas", systems, paths);
+
+        var redraw = function(event) {
+            resizeCanvas();
+            hexagonGrid.redraw();
+        }
+        window.onresize = redraw;
+        redraw();
+    </script>
+</body>
