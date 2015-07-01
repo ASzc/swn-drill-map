@@ -2,7 +2,7 @@
 
 Find ship transit data within a Stars Without Number sector.
 
-*Congratulations on purchasing your RSNav Mark I navigation computer from Richardson Scientific (Astronautics Division). We are confident that it will give you many jumps of fine service. For installation and calibration please see page 9. For the user guide, please see page 2306.*
+*Congratulations on purchasing your RSNav Mark I navigation computer from Richardson Scientific (Astronautics Division). We are confident that it will give you many drills of fine service. For installation and calibration please see page 9. For the user guide, please see page 2306.*
 
 ## Basic Usage
 
